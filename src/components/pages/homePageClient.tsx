@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MassageShop } from "@/src/types/interface";
 import { HomeHeroSearch } from "@/src/components/pages/homeHeroSearch";
 import { FeaturedShopsSection } from "@/src/components/features/shops/featuredShopsSection";
+import ConfirmDeleteModal from "@/src/components/ui/ConfirmDeleteModal";
 
 type HomePageClientProps = {
   shops: MassageShop[];
@@ -14,6 +15,7 @@ type HomePageClientProps = {
 export function HomePageClient({ shops, loadError }: HomePageClientProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
+  const [showModal, setShowModal] = useState(true);
 
   const featuredShops = useMemo(() => shops.slice(0, 3), [shops]);
 
@@ -46,6 +48,11 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
 
   return (
     <>
+      <ConfirmDeleteModal
+        isOpen={showModal}
+        onConfirm={() => setShowModal(false)}
+        onCancel={() => setShowModal(false)}
+      />
       <HomeHeroSearch
         searchInput={searchInput}
         isLoading={false}
