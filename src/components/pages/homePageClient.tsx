@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MassageShop } from "@/src/types/interface";
 import { HomeHeroSearch } from "@/src/components/pages/homeHeroSearch";
 import { FeaturedShopsSection } from "@/src/components/features/shops/featuredShopsSection";
+import EditPromotionModal from "@/src/components/ui/EditPromotionModal";
 
 type HomePageClientProps = {
   shops: MassageShop[];
@@ -14,16 +15,13 @@ type HomePageClientProps = {
 export function HomePageClient({ shops, loadError }: HomePageClientProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
+  const [showModal, setShowModal] = useState(true); // ← true = เด้งทันที
 
   const featuredShops = useMemo(() => shops.slice(0, 3), [shops]);
 
   const dropdownResults = useMemo(() => {
     const query = searchInput.trim().toLowerCase();
-
-    if (!query) {
-      return [];
-    }
-
+    if (!query) return [];
     return shops
       .filter((shop) => {
         const searchTarget =
@@ -35,17 +33,17 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const query = searchInput.trim();
-    if (!query) {
-      return;
-    }
-
+    if (!query) return;
     router.push(`/massage-shops?q=${encodeURIComponent(query)}`);
   };
 
   return (
     <>
+      <EditPromotionModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+      />
       <HomeHeroSearch
         searchInput={searchInput}
         isLoading={false}
