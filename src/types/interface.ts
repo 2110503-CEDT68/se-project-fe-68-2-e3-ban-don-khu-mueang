@@ -43,3 +43,16 @@ export interface PaginatedResponse<T> {
 }
 
 export type MassagesResponse = PaginatedResponse<MassageShop>;
+
+export interface Promotion {
+    _id: string;
+    name: string;
+    amount: number;
+    startDate: string;
+    endDate: string;
+    isActive: boolean;
+    conditions: {
+        enabled: boolean;
+        minReservations: number;
+    };
+}
