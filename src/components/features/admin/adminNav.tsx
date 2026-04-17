@@ -18,6 +18,7 @@ const navItems: NavItem[] = [
   { href: "/admin/shops", label: "Manage Shops", icon: "/store.svg" },
   { href: "/admin/reservations", label: "All Reservations", icon: "/calendar-range.svg" },
   { href: "/admin/users", label: "User Management", icon: "/users.svg" },
+  { href: "/admin/reviews",label: "All Reviews", icon: "/star.svg"}, 
 ];
 
 function isNavItemActive(pathname: string, href: string) {
