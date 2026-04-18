@@ -3,6 +3,7 @@ import { MassagesResponse } from "@/src/types/interface";
 import { ShopCard } from "@/src/components/features/shops/shopCard";
 import { apiBaseUrl } from "@/src/lib/config";
 import { MassageShopsListClient } from "@/src/components/features/shops/massageShopsListClient";
+import { getMaxActiveDiscount } from "@/src/lib/promotion/getMaxDiscount";
 
 export const revalidate = 60;
 
@@ -32,8 +33,12 @@ export default async function MassageShopsPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  const { shops, loadError } = await getMassageShops();
-  const params = await searchParams;
+  const [{ shops, loadError }, maxDiscount, params] = await Promise.all([
+    getMassageShops(),
+    getMaxActiveDiscount(),
+    searchParams,
+  ]);
+  
   const searchQuery = params.q || "";
 
   return (
@@ -58,8 +63,10 @@ export default async function MassageShopsPage({
           shops={shops}
           loadError={loadError}
           searchQuery={searchQuery}
+          maxDiscount={maxDiscount}
         />
       </div>
     </section>
   );
 }
+

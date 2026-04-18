@@ -1,6 +1,7 @@
 import { MassagesResponse } from "@/src/types/interface";
 import { apiBaseUrl } from "@/src/lib/config";
 import { HomePageClient } from "@/src/components/pages/homePageClient";
+import { getMaxActiveDiscount } from "@/src/lib/promotion/getMaxDiscount";
 
 export const revalidate = 60;
 
@@ -49,9 +50,13 @@ export default async function Home({
   const resolvedSearchParams =
     searchParams instanceof Promise ? await searchParams : (searchParams ?? {});
 
-  const { shops, loadError } = await getMainPageShops();
+  const [{ shops, loadError }, maxDiscount] = await Promise.all([
+    getMainPageShops(),
+    getMaxActiveDiscount()
+  ]);
+  
   const authError = getErrorMessage(resolvedSearchParams);
   const displayError = authError || loadError;
 
-  return <HomePageClient shops={shops} loadError={displayError} />;
+  return <HomePageClient shops={shops} loadError={displayError} maxDiscount={maxDiscount} />;
 }

@@ -10,9 +10,10 @@ import { PromotionBanner } from "@/src/components/features/promotion/promotionBa
 type HomePageClientProps = {
   shops: MassageShop[];
   loadError: string | null;
+  maxDiscount?: number;
 };
 
-export function HomePageClient({ shops, loadError }: HomePageClientProps) {
+export function HomePageClient({ shops, loadError, maxDiscount = 0 }: HomePageClientProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
 
@@ -60,6 +61,7 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
         featuredShops={featuredShops}
         isLoading={false}
         loadError={loadError}
+        maxDiscount={maxDiscount}
       />
     </>
   );
