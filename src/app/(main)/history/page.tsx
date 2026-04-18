@@ -5,6 +5,7 @@ import getUserProfile from "@/src/lib/auth/getUserProfile";
 import HistoryReviewCard from "@/src/components/features/history/HistoryReviewCard";
 import getShopById from "@/src/lib/shop/getShopById";
 import { MassageShop } from "@/src/types/interface";
+import getReviews from "@/src/lib/review/getReviews";
 
 export default async function HistoryPage() {
     const session = await getServerSession(authOptions);
@@ -27,6 +28,52 @@ export default async function HistoryPage() {
     const userId = profile?.data?._id;
     const reservations = await getReservation(token);
 
+    let reviewsData: Awaited<ReturnType<typeof getReviews>>["data"] = [];
+    try {
+        const reviews = await getReviews(token);
+        reviewsData = reviews.data;
+    } catch (error) {
+        console.error("Failed to fetch reviews:", error);
+    }
+
+    const reviewsByReservationId = new Map<
+        string,
+        { rating: number; comment?: string; updatedAt?: string; createdAt?: string }
+    >();
+
+    for (const review of reviewsData) {
+        const reservationId = typeof review.reservation === "object"
+            ? review.reservation?._id
+            : review.reservation;
+
+        if (!reservationId) {
+            continue;
+        }
+
+        const existing = reviewsByReservationId.get(reservationId);
+        if (!existing) {
+            reviewsByReservationId.set(reservationId, {
+                rating: review.rating,
+                comment: review.comment,
+                updatedAt: review.updatedAt,
+                createdAt: review.createdAt,
+            });
+            continue;
+        }
+
+        const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+        const incomingTime = new Date(review.updatedAt || review.createdAt || 0).getTime();
+
+        if (incomingTime >= existingTime) {
+            reviewsByReservationId.set(reservationId, {
+                rating: review.rating,
+                comment: review.comment,
+                updatedAt: review.updatedAt,
+                createdAt: review.createdAt,
+            });
+        }
+    }
+
     const pastReservations = await Promise.all(
         reservations.data
             .filter((appointment) => {
@@ -40,6 +87,7 @@ export default async function HistoryPage() {
                 return false;
             })
             .map(async (appointment) => {
+                const matchedReview = reviewsByReservationId.get(appointment._id);
                 const massageId = typeof appointment.massage === "object"
                     ? appointment.massage._id
                     : appointment.massage;
@@ -67,7 +115,8 @@ export default async function HistoryPage() {
                                 day: "numeric",
                                 year: "numeric",
                             }),
-                            rating: appointment.rating,
+                            rating: matchedReview?.rating ?? appointment.rating,
+                            comment: matchedReview?.comment,
                         };
                     }
                 }
@@ -81,7 +130,8 @@ export default async function HistoryPage() {
                         day: "numeric",
                         year: "numeric",
                     }),
-                    rating: appointment.rating,
+                    rating: matchedReview?.rating ?? appointment.rating,
+                    comment: matchedReview?.comment,
                 };
             })
     );
@@ -110,7 +160,7 @@ export default async function HistoryPage() {
                             completedOn={reservation.completedOn}
                             token={token}
                             initialRating={reservation.rating}
-                            initialComment=""
+                            initialComment={reservation.comment || ""}
                         />
                     ))
                 )}

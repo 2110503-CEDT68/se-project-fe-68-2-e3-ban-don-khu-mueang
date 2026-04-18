@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Rating } from "@mui/material";
 import rateReservation from "@/src/lib/reservation/rateReservation";
@@ -14,14 +14,6 @@ interface HistoryReviewCardProps {
     initialRating?: number;
     initialComment?: string;
 }
-
-interface SavedReview {
-    rating: number | null;
-    comment: string;
-    savedAt: string;
-}
-
-const getStorageKey = (id: string) => `reservation-review-${id}`;
 
 export default function HistoryReviewCard({
     id,
@@ -37,54 +29,31 @@ export default function HistoryReviewCard({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSaved, setIsSaved] = useState(Boolean(initialRating || initialComment));
     const [savedAt, setSavedAt] = useState<string | null>(null);
-
-    useEffect(() => {
-        const storageKey = getStorageKey(id);
-        const rawValue = window.localStorage.getItem(storageKey);
-
-        if (!rawValue) {
-            return;
-        }
-
-        try {
-            const parsedValue = JSON.parse(rawValue) as SavedReview;
-            setRating(parsedValue.rating);
-            setComment(parsedValue.comment);
-            setIsSaved(true);
-            setSavedAt(parsedValue.savedAt);
-        } catch (error) {
-            console.error("Failed to read saved review:", error);
-        }
-    }, [id]);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const persistReview = async () => {
         const trimmedComment = comment.trim();
 
-        if (!rating && !trimmedComment) {
+        if (isSaved || !rating) {
             return;
         }
 
         setIsSubmitting(true);
+        setSubmitError(null);
 
         try {
-            if (rating) {
-                await rateReservation(id, rating, token);
-            }
+            await rateReservation(id, rating, token, trimmedComment || undefined);
 
             const nextSavedAt = new Date().toISOString();
-            window.localStorage.setItem(
-                getStorageKey(id),
-                JSON.stringify({
-                    rating,
-                    comment: trimmedComment,
-                    savedAt: nextSavedAt,
-                })
-            );
-
             setIsSaved(true);
             setSavedAt(nextSavedAt);
+
+            if (trimmedComment !== comment) {
+                setComment(trimmedComment);
+            }
         } catch (error) {
             console.error("Error saving review:", error);
+            setSubmitError(error instanceof Error ? error.message : "Failed to submit review");
         } finally {
             setIsSubmitting(false);
         }
@@ -112,11 +81,15 @@ export default function HistoryReviewCard({
                     <div className="flex flex-col gap-4 rounded-2xl bg-surface-container-lowest p-4">
                         <div className="flex items-center justify-between gap-3">
                             <span className="text-xs font-bold uppercase tracking-[0.12em] text-secondary">
-                                {isSaved ? "Edit Review" : "Submit Review"}
+                                {isSaved ? "Review Submitted" : "Submit Review"}
                             </span>
                             {savedAt ? (
                                 <span className="text-xs font-medium text-on-surface-variant">
                                     Last saved {new Date(savedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                </span>
+                            ) : isSaved ? (
+                                <span className="text-xs font-medium text-on-surface-variant">
+                                    Review submitted
                                 </span>
                             ) : (
                                 <span className="text-xs font-medium text-on-surface-variant">
@@ -130,7 +103,7 @@ export default function HistoryReviewCard({
                             value={rating}
                             onChange={(_, newValue) => setRating(newValue)}
                             className="text-secondary"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || isSaved}
                         />
 
                         <label className="flex flex-col gap-2">
@@ -143,32 +116,22 @@ export default function HistoryReviewCard({
                                 rows={4}
                                 placeholder="Write a short note about your experience..."
                                 className="min-h-[108px] rounded-xl border border-[rgba(195,200,194,0.45)] bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-on-surface-variant focus:border-primary"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || isSaved}
                             />
                         </label>
+
+                        {submitError && (
+                            <p className="text-xs font-medium text-red-700">{submitError}</p>
+                        )}
 
                         <div className="flex flex-wrap gap-3">
                             <button
                                 type="button"
                                 onClick={persistReview}
-                                disabled={isSubmitting || (!rating && !comment.trim())}
+                                disabled={isSubmitting || isSaved || !rating}
                                 className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                {isSubmitting ? "Submitting..." : isSaved ? "Submit Changes" : "Submit Review"}
-                            </button>
-                            <button
-                                type="button"
-                                disabled
-                                className="inline-flex items-center justify-center rounded-full border border-[rgba(195,200,194,0.6)] bg-white px-5 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                type="button"
-                                disabled
-                                className="inline-flex items-center justify-center rounded-full border border-[rgba(195,200,194,0.6)] bg-white px-5 py-2.5 text-sm font-bold text-on-surface-variant transition-colors hover:bg-surface-container-low disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                Delete
+                                {isSubmitting ? "Submitting..." : isSaved ? "Review Submitted" : "Submit Review"}
                             </button>
                         </div>
                     </div>
