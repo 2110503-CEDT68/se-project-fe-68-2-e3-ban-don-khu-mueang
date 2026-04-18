@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 type AdminNavProps = {
   mobile?: boolean;
+  showHomeAtBottom?: boolean;
 };
 
 type NavItem = {
@@ -29,7 +30,7 @@ function isNavItemActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export default function AdminNav({ mobile = false }: AdminNavProps) {
+export default function AdminNav({ mobile = false, showHomeAtBottom = true }: AdminNavProps) {
   const pathname = usePathname();
   const activeBase = mobile
     ? "bg-surface-container text-primary"
@@ -40,25 +41,49 @@ export default function AdminNav({ mobile = false }: AdminNavProps) {
   const baseClass = mobile
     ? "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors"
     : "flex items-center gap-4 rounded-xl px-4 py-3 transition-colors";
+  const homeActive = pathname === "/";
+  const homeClass = `${homeActive ? activeBase : inactiveBase} ${baseClass} ${homeActive ? "font-semibold" : ""}`;
+  const containerClass = showHomeAtBottom && !mobile ? "flex h-full flex-col" : "space-y-2";
+  const homeSectionClass = showHomeAtBottom
+    ? mobile
+      ? "mt-3 border-t border-outline-variant/20 pt-3"
+      : "mt-auto border-t border-outline-variant/20 pt-4"
+    : "";
 
   return (
-    <nav className="space-y-2">
-      {navItems.map((item) => {
-        const active = isNavItemActive(pathname, item.href);
-        const linkClass = `${active ? activeBase : inactiveBase} ${baseClass} ${active ? "font-semibold" : ""}`;
+    <nav className={containerClass}>
+      <div className="space-y-2">
+        {navItems.map((item) => {
+          const active = isNavItemActive(pathname, item.href);
+          const linkClass = `${active ? activeBase : inactiveBase} ${baseClass} ${active ? "font-semibold" : ""}`;
 
-        return (
-          <Link key={item.href} href={item.href} className={linkClass}>
+          return (
+            <Link key={item.href} href={item.href} className={linkClass}>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+              >
+                <img src={item.icon} alt="" />
+              </span>
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      {showHomeAtBottom && (
+        <div className={homeSectionClass}>
+          <Link href="/" className={homeClass}>
             <span
               className="material-symbols-outlined"
-              style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}
+              style={{ fontVariationSettings: homeActive ? "'FILL' 1" : "'FILL' 0" }}
             >
-              <img src={item.icon} alt="" />
+              <img src="/window.svg" alt="" />
             </span>
-            {item.label}
+            Home Page
           </Link>
-        );
-      })}
+        </div>
+      )}
     </nav>
   );
 }

@@ -1,5 +1,5 @@
+import Link from "next/link";
 import UpcomeAppoint from "@/src/components/features/booking/UpcomeAppoint";
-import PastExperiences from "@/src/components/features/experiences/PastExperiences";
 
 export default function MyBooking() {
     return (
@@ -19,15 +19,27 @@ export default function MyBooking() {
                     </p>
                 </header>
 
-                {/* Main Content Area: Asymmetric Layout */}
-                <div className="flex flex-col lg:flex-row gap-[106px] w-full max-w-[1232px]">
-                    <section className="flex-1 w-full lg:max-w-[805px]">
+                <div className="flex flex-col gap-10 w-full max-w-[1232px]">
+                    <section className="w-full">
                         <UpcomeAppoint />
                     </section>
 
-                    <aside className="w-full lg:max-w-[378px]">
-                        <PastExperiences />
-                    </aside>
+                    <section className="flex w-full flex-col gap-5 rounded-3xl border border-[rgba(195,200,194,0.35)] bg-surface-container-lowest p-8 shadow-[0_8px_30px_rgb(26_28_24/0.04)] lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex flex-col gap-2">
+                            <h2 className="font-headline text-2xl text-foreground">Booking History</h2>
+                            <p className="max-w-[560px] text-sm leading-6 text-on-surface-variant">
+                                Open your history page to review completed appointments, leave a
+                                rating, and add a comment for each visit.
+                            </p>
+                        </div>
+
+                        <Link
+                            href="/history"
+                            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-bold text-on-primary transition-opacity hover:opacity-90"
+                        >
+                            View History
+                        </Link>
+                    </section>
                 </div>
             </main>
         </div>
