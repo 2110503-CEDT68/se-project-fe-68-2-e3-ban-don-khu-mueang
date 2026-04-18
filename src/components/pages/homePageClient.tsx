@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MassageShop } from "@/src/types/interface";
 import { HomeHeroSearch } from "@/src/components/pages/homeHeroSearch";
 import { FeaturedShopsSection } from "@/src/components/features/shops/featuredShopsSection";
+import { PromotionBanner } from "@/src/components/features/promotion/promotionBanner";
 
 type HomePageClientProps = {
   shops: MassageShop[];
@@ -54,6 +55,7 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
         onSearchChange={setSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
+      <PromotionBanner />
       <FeaturedShopsSection
         featuredShops={featuredShops}
         isLoading={false}

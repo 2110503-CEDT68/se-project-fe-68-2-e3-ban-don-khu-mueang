@@ -12,6 +12,7 @@ function BookingForm() {
     const shopId = searchParams.get('id');
     const shopName = searchParams.get('name') || "Selected Shop";
     const shopPrice = Number(searchParams.get('price')) || 0;
+    const discount = Number(searchParams.get('discount')) || 15; // Set a default discount or read from searchParams
 
     const [reserveDate, setReserveDate] = useState("");
 
@@ -94,13 +95,19 @@ function BookingForm() {
                 <div className="flex items-center justify-between text-sm text-[#434843]">
                     <span>Subtotal</span>
                     <span className="font-['Roboto'] text-lg font-semibold text-[#1A1C18]">
-                        ${shopPrice.toFixed(2)}
+                        ฿{shopPrice.toFixed(2)}
+                    </span>
+                </div>
+                <div className="flex items-center justify-between text-sm text-[#4E6053]">
+                    <span>Promotion Discount</span>
+                    <span className="font-['Roboto'] text-lg font-semibold text-[#4E6053]">
+                        -฿{discount.toFixed(2)}
                     </span>
                 </div>
                 <div className="flex items-center justify-between text-sm text-[#434843]">
                     <span>Taxes & Fees</span>
-                    <span className="font-['Roboto'] text-lg font-semibold text-[#4E6053]">
-                        $12.00
+                    <span className="font-['Roboto'] text-lg font-semibold text-[#1A1C18]">
+                        ฿12.00
                     </span>
                 </div>
 
@@ -108,7 +115,7 @@ function BookingForm() {
                 <div className="flex items-center justify-between border-t border-[#C3C8C2]/10 pt-4 text-base font-bold text-[#1A1C18]">
                     <span>Total</span>
                     <span className="font-['Noto_Serif'] text-2xl font-bold">
-                        ${(shopPrice + 12).toFixed(2)}
+                        ฿{Math.max(0, shopPrice - discount + 12).toFixed(2)}
                     </span>
                 </div>
             </div>
