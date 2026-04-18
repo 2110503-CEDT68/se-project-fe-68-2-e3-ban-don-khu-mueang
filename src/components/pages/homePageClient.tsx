@@ -14,6 +14,7 @@ type HomePageClientProps = {
 export function HomePageClient({ shops, loadError }: HomePageClientProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
+  const [showModal, setShowModal] = useState(true);
 
   const featuredShops = useMemo(() => shops.slice(0, 3), [shops]);
 
@@ -46,6 +47,7 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
 
   return (
     <>
+      
       <HomeHeroSearch
         searchInput={searchInput}
         isLoading={false}
