@@ -24,7 +24,7 @@ export default function ReservationsListClient({
 	const [shopFilter, setShopFilter] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [dateFilter, setDateFilter] = useState("");
-	const [sortBy, setSortBy] = useState("date-desc");
+	const [sortBy, setSortBy] = useState("created-desc");
 
 	const shopOptions = useMemo(
 		() =>
@@ -99,7 +99,7 @@ export default function ReservationsListClient({
 		setShopFilter("");
 		setStatusFilter("all");
 		setDateFilter("");
-		setSortBy("date-desc");
+		setSortBy("created-desc");
 	};
 
 	return (

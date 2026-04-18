@@ -12,6 +12,8 @@ function BookingForm() {
     const shopId = searchParams.get('id');
     const shopName = searchParams.get('name') || "Selected Shop";
     const shopPrice = Number(searchParams.get('price')) || 0;
+    const taxAndFees = 12;
+    const netPrice = shopPrice + taxAndFees;
 
     const [reserveDate, setReserveDate] = useState("");
 
@@ -49,7 +51,13 @@ function BookingForm() {
 
         setIsSubmitting(true);
         try {
-            await addReservation(shopId, new Date(reserveDate).toISOString(), token);
+            await addReservation(
+                shopId,
+                new Date(reserveDate).toISOString(),
+                shopPrice,
+                netPrice,
+                token
+            );
             router.push("/mybooking");
             router.refresh();
         } catch (error) {
@@ -100,7 +108,7 @@ function BookingForm() {
                 <div className="flex items-center justify-between text-sm text-[#434843]">
                     <span>Taxes & Fees</span>
                     <span className="font-['Roboto'] text-lg font-semibold text-[#4E6053]">
-                        $12.00
+                        ${taxAndFees.toFixed(2)}
                     </span>
                 </div>
 
@@ -108,7 +116,7 @@ function BookingForm() {
                 <div className="flex items-center justify-between border-t border-[#C3C8C2]/10 pt-4 text-base font-bold text-[#1A1C18]">
                     <span>Total</span>
                     <span className="font-['Noto_Serif'] text-2xl font-bold">
-                        ${(shopPrice + 12).toFixed(2)}
+                        ${netPrice.toFixed(2)}
                     </span>
                 </div>
             </div>
