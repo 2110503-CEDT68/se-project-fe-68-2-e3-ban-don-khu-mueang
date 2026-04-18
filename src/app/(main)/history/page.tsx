@@ -86,6 +86,10 @@ export default async function HistoryPage() {
 
                 return false;
             })
+            .sort(
+                (first, second) =>
+                    new Date(second.reserveDate).getTime() - new Date(first.reserveDate).getTime()
+            )
             .map(async (appointment) => {
                 const matchedReview = reviewsByReservationId.get(appointment._id);
                 const massageId = typeof appointment.massage === "object"
