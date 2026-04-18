@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { MassageShop } from "@/src/types/interface";
 import getShopById from "@/src/lib/shop/getShopById";
 import getSessionAuthContext from "@/src/lib/auth/getSessionAuthContext";
+import ShopReviewSection from "@/src/components/features/shops/shopReviewSection";
+import getShopReview from "@/src/lib/review/getShopReview";
 
 type MassageShopDetailPageProps = {
   params: Promise<{
@@ -23,6 +25,7 @@ export default async function MassageShopDetailPage({
   const { id } = await params;
   const { session } = await getSessionAuthContext();
   const response = await getShopById<MassageShop>(id);
+  const reviewResponse = await getShopReview(id);
 
   if (!response?.data) {
     notFound();
@@ -153,6 +156,7 @@ export default async function MassageShopDetailPage({
             </div>
           </aside>
         </div>
+        <ShopReviewSection reviews={reviewResponse?.data || []} />
       </div>
     </section>
   );

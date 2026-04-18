@@ -1,1 +1,1 @@
-export const apiBaseUrl = process.env.NODE_ENV === "production" ? "https://e3-backend.vercel.app" : "https://e3-backend-dev.vercel.app";
+export const apiBaseUrl = process.env.NODE_ENV === "production" ? "https://e3-backend.vercel.app" : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000");
