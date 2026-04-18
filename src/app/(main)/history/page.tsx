@@ -36,9 +36,10 @@ export default async function HistoryPage() {
         console.error("Failed to fetch reviews:", error);
     }
 
+    // UPDATE 1: Add reviewId to the Map
     const reviewsByReservationId = new Map<
         string,
-        { rating: number; comment?: string; updatedAt?: string; createdAt?: string }
+        { reviewId: string; rating: number; comment?: string; updatedAt?: string; createdAt?: string }
     >();
 
     for (const review of reviewsData) {
@@ -53,6 +54,7 @@ export default async function HistoryPage() {
         const existing = reviewsByReservationId.get(reservationId);
         if (!existing) {
             reviewsByReservationId.set(reservationId, {
+                reviewId: review._id, // <-- Store the Review ID
                 rating: review.rating,
                 comment: review.comment,
                 updatedAt: review.updatedAt,
@@ -66,6 +68,7 @@ export default async function HistoryPage() {
 
         if (incomingTime >= existingTime) {
             reviewsByReservationId.set(reservationId, {
+                reviewId: review._id, // <-- Store the Review ID
                 rating: review.rating,
                 comment: review.comment,
                 updatedAt: review.updatedAt,
@@ -112,6 +115,7 @@ export default async function HistoryPage() {
                     if (shopResponse?.data?.name) {
                         return {
                             id: appointment._id,
+                            reviewId: matchedReview?.reviewId, // <-- Include the Review ID
                             massageName: shopResponse.data.name,
                             imageSrc,
                             completedOn: new Date(appointment.reserveDate).toLocaleDateString("en-US", {
@@ -127,6 +131,7 @@ export default async function HistoryPage() {
 
                 return {
                     id: appointment._id,
+                    reviewId: matchedReview?.reviewId, // <-- Include the Review ID
                     massageName,
                     imageSrc,
                     completedOn: new Date(appointment.reserveDate).toLocaleDateString("en-US", {
@@ -158,7 +163,8 @@ export default async function HistoryPage() {
                     pastReservations.map((reservation) => (
                         <HistoryReviewCard
                             key={reservation.id}
-                            id={reservation.id}
+                            id={reservation.id} // Still passes Reservation ID (used to create a new review)
+                            reviewId={reservation.reviewId} // UPDATE 2: Pass Review ID
                             massageName={reservation.massageName}
                             imageSrc={reservation.imageSrc}
                             completedOn={reservation.completedOn}
