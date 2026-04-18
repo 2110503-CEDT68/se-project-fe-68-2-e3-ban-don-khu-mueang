@@ -17,6 +17,8 @@ export default function EditPromotionModal({ isOpen, onClose }: EditPromotionMod
   const [discount, setDiscount] = useState("5")
   const [minReservations, setMinReservations] = useState("10")
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false)
+  const [startDate, setStartDate] = useState("2026-04-20")
+  const [endDate, setEndDate] = useState("2026-05-01")
 
   if (!isOpen) return null
 
@@ -180,7 +182,60 @@ export default function EditPromotionModal({ isOpen, onClose }: EditPromotionMod
                 </span>
               </div>
             </div>
+                  {/* Start Date - End Date */}
+          <div style={{ display: "flex", gap: "16px", width: "100%" }}>
+  
+            {/* Start Date */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+              <label style={{ fontFamily: "Manrope, sans-serif", fontSize: "12px", fontWeight: 600, color: "#1A1C18" }}>
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "15px 16px",
+                  borderRadius: "12px",
+                  backgroundColor: "#F3F4ED",
+                  border: "none",
+                  outline: "none",
+                  fontFamily: "Manrope, sans-serif",
+                  fontSize: "16px",
+                  color: "#1A1C18",
+                  boxSizing: "border-box",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
 
+            {/* End Date */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+              <label style={{ fontFamily: "Manrope, sans-serif", fontSize: "12px", fontWeight: 600, color: "#1A1C18" }}>
+                End Date
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "15px 16px",
+                  borderRadius: "12px",
+                  backgroundColor: "#F3F4ED",
+                  border: "none",
+                  outline: "none",
+                  fontFamily: "Manrope, sans-serif",
+                  fontSize: "16px",
+                  color: "#1A1C18",
+                  boxSizing: "border-box",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
+
+          </div> 
             {/* Condition Toggle */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <label style={{ fontFamily: "Manrope, sans-serif", fontSize: "12px", fontWeight: 600, color: "#1A1C18" }}>
@@ -213,7 +268,7 @@ export default function EditPromotionModal({ isOpen, onClose }: EditPromotionMod
                 />
               </div>
             </div>
-
+            
             {/* Discount Condition */}
             {hasCondition && (
               <div style={{
