@@ -8,13 +8,12 @@ interface PastExperienceCardProps {
     massageName: string;
     date: string;
     initialRating?: number;
-    isRated?: boolean;
     token: string;
 }
 
-export default function PastExperienceCard({ id, massageName, date, initialRating = 0, isRated = false, token }: PastExperienceCardProps) {
-    const [rating, setRating] = useState<number | null>(initialRating);
-    const [rated, setRated] = useState(isRated);
+export default function PastExperienceCard({ id, massageName, date, initialRating = 0, token }: PastExperienceCardProps) {
+    const [rating, setRating] = useState<number | null>(initialRating || null);
+    const [rated, setRated] = useState(Boolean(initialRating));
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {

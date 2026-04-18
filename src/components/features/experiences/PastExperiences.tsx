@@ -41,7 +41,6 @@ export default async function PastExperiences() {
                             massageName={massageName}
                             date={formattedDate}
                             initialRating={appointment.rating || 0}
-                            isRated={appointment.isRated || false}
                             token={token as string}
                         />
                     );
