@@ -11,6 +11,7 @@ import ConfirmDeleteModal from "@/src/components/ui/ConfirmDeleteModal";
 
 interface HistoryReviewCardProps {
     id: string;
+    reviewId?: string;
     massageName: string;
     imageSrc: string;
     completedOn: string;
@@ -21,6 +22,7 @@ interface HistoryReviewCardProps {
 
 export default function HistoryReviewCard({
     id,
+    reviewId,
     massageName,
     imageSrc,
     completedOn,
@@ -82,8 +84,17 @@ export default function HistoryReviewCard({
         setIsSubmitting(true);
         setSubmitError(null);
 
+        // Make sure we actually have a reviewId before trying to delete
+        if (!reviewId) {
+            setSubmitError("Cannot delete: Review ID is missing.");
+            setIsSubmitting(false);
+            return;
+        }
+
         try {
-            await deleteReview(id, token); 
+            // 2. Pass the reviewId here instead of the reservation id
+            await deleteReview(reviewId, token); 
+            
             setRating(null);
             setComment("");
             setIsSaved(false);
