@@ -20,7 +20,7 @@ export default function MyBooking() {
                 </header>
 
                 <div className="flex flex-col gap-10 w-full max-w-[1232px]">
-                    <section className="w-full lg:max-w-[805px]">
+                    <section className="w-full">
                         <UpcomeAppoint />
                     </section>
 
