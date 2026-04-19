@@ -12,15 +12,15 @@ export default async function AdminLayout({
 }>) {
 	const { session, profile, isAdmin } = await getSessionAuthContext();
 
-	if (!session?.user) {
-		redirect("/login?callbackUrl=/admin");
-	} else if (!isAdmin) {
-		// redirect("/");
-		// unauthorized();
-		forbidden();
-	}
+        if (!session?.user) {
+                redirect("/login?callbackUrl=/admin");
+        } else if (!isAdmin) {
+                // redirect("/");
+                // unauthorized();
+                forbidden();
+        }
 
-	return (
+        return (
 		<div className="bg-background text-on-surface flex min-h-screen flex-col lg:flex-row">
 			<aside className="bg-surface-container hidden w-72 shrink-0 flex-col border-r border-outline-variant/10 lg:sticky lg:top-0 lg:flex lg:h-screen lg:overflow-y-auto">
 				<div className="p-8">

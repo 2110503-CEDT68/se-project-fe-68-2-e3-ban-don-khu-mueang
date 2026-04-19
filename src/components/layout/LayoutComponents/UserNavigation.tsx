@@ -4,13 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-// 1. Define your dropdown links here! Now it's super easy to add or remove sections.
 const dropdownMenuLinks = [
   { href: "/admin", label: "Admin Dashboard", authRequired: true, adminOnly: true },
   { href: "/profile", label: "My Profile", authRequired: true },
 ];
 
-export default function UserAuthNav({ profile }) {
+// Add isAdmin to the destructured props
+export default function UserAuthNav({ profile, isAdmin }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -49,24 +49,24 @@ export default function UserAuthNav({ profile }) {
           {isOpen && (
             <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl bg-surface-container-lowest py-2 shadow-[0_8px_32px_rgb(26_28_24/0.08)] transition-all duration-200">
               
-              {/* 2. Map through your flexible links here */}
-              {dropdownMenuLinks.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-2 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {/* Only show the link if it's NOT adminOnly, OR if the user IS an admin */}
+              {dropdownMenuLinks.map((link, index) => {
+                if (link.adminOnly && !isAdmin) return null;
+                
+                return (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block px-4 py-2 text-sm text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
 
-              {/* 3. A subtle visual divider before the logout button */}
-              {dropdownMenuLinks.length > 0 && (
-                <hr className="my-1 border-surface-container-highest opacity-50" />
-              )}
+              <hr className="my-1 border-surface-container-highest opacity-50" />
 
-              {/* Logout stays at the bottom */}
               <Link
                 href="/logout"
                 onClick={() => setIsOpen(false)}
