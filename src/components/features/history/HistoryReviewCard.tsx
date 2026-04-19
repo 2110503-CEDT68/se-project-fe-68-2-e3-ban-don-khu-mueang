@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Rating } from "@mui/material";
-import { Pencil, Trash2 } from "lucide-react"; // <-- ADDED ICONS
+import { Pencil, Trash2 } from "lucide-react";
 import rateReservation from "@/src/lib/reservation/rateReservation";
 import updateReview from "@/src/lib/review/updateReview"; 
 import deleteReview from "@/src/lib/review/deleteReview"; 
@@ -11,7 +11,7 @@ import ConfirmDeleteModal from "@/src/components/ui/ConfirmDeleteModal";
 
 interface HistoryReviewCardProps {
     id: string;
-    reviewId?: string;
+    reviewId?: string; // The ID passed down from the parent
     massageName: string;
     imageSrc: string;
     completedOn: string;
@@ -39,6 +39,9 @@ export default function HistoryReviewCard({
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const [isExistingReview, setIsExistingReview] = useState(Boolean(initialRating));
+    
+    // FIX 1: Turn reviewId into a state variable so we can update it without a refresh
+    const [currentReviewId, setCurrentReviewId] = useState<string | undefined>(reviewId);
 
     const persistReview = async () => {
         const trimmedComment = comment.trim();
@@ -50,10 +53,18 @@ export default function HistoryReviewCard({
 
         try {
             if (isExistingReview) {
+                // UPDATE
                 await updateReview(id, rating, token, trimmedComment || undefined);
             } else {
-                await rateReservation(id, rating, token, trimmedComment || undefined);
+                // CREATE
+                const response = await rateReservation(id, rating, token, trimmedComment || undefined);
                 setIsExistingReview(true); 
+                
+                // FIX 2: Capture the newly generated ID from the backend response and save it!
+                // (Adjust this path if your backend returns the ID slightly differently, e.g., response._id)
+                if (response && response.data && response.data._id) {
+                    setCurrentReviewId(response.data._id);
+                }
             }
 
             const nextSavedAt = new Date().toISOString();
@@ -84,22 +95,26 @@ export default function HistoryReviewCard({
         setIsSubmitting(true);
         setSubmitError(null);
 
-        // Make sure we actually have a reviewId before trying to delete
-        if (!reviewId) {
-            setSubmitError("Cannot delete: Review ID is missing.");
+        // FIX 3: Use the STATE variable (currentReviewId) instead of the PROP
+        if (!currentReviewId) {
+            setSubmitError("Cannot delete: Review ID is missing. Please refresh.");
             setIsSubmitting(false);
             return;
         }
 
         try {
-            // 2. Pass the reviewId here instead of the reservation id
-            await deleteReview(reviewId, token); 
+            // Pass currentReviewId here
+            await deleteReview(currentReviewId, token); 
             
             setRating(null);
             setComment("");
             setIsSaved(false);
             setSavedAt(null);
             setIsExistingReview(false); 
+            
+            // FIX 4: Clear the ID so it's ready for a brand new review if they change their mind
+            setCurrentReviewId(undefined);
+            
         } catch (error) {
             console.error("Error deleting review:", error);
             setSubmitError(error instanceof Error ? error.message : "Failed to delete review");

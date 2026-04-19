@@ -77,7 +77,7 @@ export default async function UserProfilePage() {
             <ProfileCalendarWidget bookingLogs={bookingLogs} />
           </section>
 
-          <section className="flex flex-col justify-center">
+          <section className="flex flex-col justify-start pt-6">
             <UserInfo 
               user={{
                 name: profile.data.name,

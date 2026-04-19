@@ -6,7 +6,8 @@ import Image from "next/image";
 
 // 1. Define your dropdown links here! Now it's super easy to add or remove sections.
 const dropdownMenuLinks = [
-  { href: "/profile", label: "My Profile" }
+  { href: "/admin", label: "Admin Dashboard", authRequired: true, adminOnly: true },
+  { href: "/profile", label: "My Profile", authRequired: true },
 ];
 
 export default function UserAuthNav({ profile }) {

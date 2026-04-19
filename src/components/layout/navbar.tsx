@@ -8,7 +8,6 @@ const navLinks = [
   { href: "/massage-shops", label: "Massage Shops", authRequired: false, adminOnly: false },
   { href: "/mybooking", label: "My Bookings", authRequired: true, adminOnly: false },
   { href: "/history", label: "History", authRequired: true, adminOnly: false },
-  { href: "/admin", label: "Admin Dashboard", authRequired: true, adminOnly: true }
 ];
 
 export async function Navbar() {
