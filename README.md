@@ -2,5 +2,6 @@
 
 # Project Setup  
 1. rename `.env.example` to `.env.local`
-2. `npm install`
-3. `npm run dev`
+2. generate sec
+3. `npm install`
+4. `npm run dev`
