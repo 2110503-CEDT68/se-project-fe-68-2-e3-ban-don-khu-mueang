@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Rating } from "@mui/material";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 import rateReservation from "@/src/lib/reservation/rateReservation";
 import updateReview from "@/src/lib/review/updateReview"; 
 import deleteReview from "@/src/lib/review/deleteReview"; 
@@ -32,6 +32,11 @@ export default function HistoryReviewCard({
 }: HistoryReviewCardProps) {
     const [rating, setRating] = useState<number | null>(initialRating || null);
     const [comment, setComment] = useState(initialComment);
+    
+    // Track the last successfully saved values so we can revert if the user clicks "Cancel"
+    const [lastSavedRating, setLastSavedRating] = useState<number | null>(initialRating || null);
+    const [lastSavedComment, setLastSavedComment] = useState(initialComment);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSaved, setIsSaved] = useState(Boolean(initialRating || initialComment));
     const [savedAt, setSavedAt] = useState<string | null>(null);
@@ -52,15 +57,12 @@ export default function HistoryReviewCard({
             const safeComment = comment || "";
             const trimmedComment = safeComment.trim();
 
-            // THE FIX: Only attempt an UPDATE if we actually have a database Review ID.
-            // If it's a "ghost" rating from the reservation, it will hit the ELSE block and properly CREATE it!
             if (currentReviewId) {
                 await updateReview(currentReviewId, rating, token, trimmedComment || undefined);
             } else {
                 const response = await rateReservation(id, rating, token, trimmedComment || undefined);
                 setIsExistingReview(true); 
                 
-                // Save the new ID so future clicks know to Update instead of Create
                 if (response && response.data && response.data._id) {
                     setCurrentReviewId(response.data._id);
                 }
@@ -69,6 +71,10 @@ export default function HistoryReviewCard({
             const nextSavedAt = new Date().toISOString();
             setIsSaved(true);
             setSavedAt(nextSavedAt);
+            
+            // Update the backup state so future cancels revert to this newly saved data
+            setLastSavedRating(rating);
+            setLastSavedComment(trimmedComment);
 
             if (trimmedComment !== safeComment) {
                 setComment(trimmedComment);
@@ -85,6 +91,14 @@ export default function HistoryReviewCard({
         setIsSaved(false);
     };
 
+    const handleCancelEdit = () => {
+        // Revert to the last saved data and close the edit mode
+        setRating(lastSavedRating);
+        setComment(lastSavedComment);
+        setIsSaved(true);
+        setSubmitError(null);
+    };
+
     const handleDelete = () => {
         setShowDeleteModal(true);
     };
@@ -94,11 +108,11 @@ export default function HistoryReviewCard({
         setIsSubmitting(true);
         setSubmitError(null);
 
-        // THE FIX: If there is no Review ID, it means this is a ghost legacy rating. 
-        // We can't delete it from the backend Reviews collection, so we just clear the UI!
         if (!currentReviewId) {
             setRating(null);
             setComment("");
+            setLastSavedRating(null);
+            setLastSavedComment("");
             setIsSaved(false);
             setSavedAt(null);
             setIsExistingReview(false); 
@@ -111,6 +125,8 @@ export default function HistoryReviewCard({
             
             setRating(null);
             setComment("");
+            setLastSavedRating(null);
+            setLastSavedComment("");
             setIsSaved(false);
             setSavedAt(null);
             setIsExistingReview(false); 
@@ -192,14 +208,27 @@ export default function HistoryReviewCard({
 
                             <div className="flex flex-wrap gap-3">
                                 {!isSaved ? (
-                                    <button
-                                        type="button"
-                                        onClick={persistReview}
-                                        disabled={isSubmitting || !rating}
-                                        className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        {isSubmitting ? "Submitting..." : "Submit Review"}
-                                    </button>
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={persistReview}
+                                            disabled={isSubmitting || !rating}
+                                            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            {isSubmitting ? "Submitting..." : "Submit"}
+                                        </button>
+                                        {/* Only show Cancel button if they are editing an already existing review */}
+                                        {isExistingReview && (
+                                            <button
+                                                type="button"
+                                                onClick={handleCancelEdit}
+                                                disabled={isSubmitting}
+                                                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-5 py-2.5 text-sm font-bold text-slate-700 transition-all hover:bg-slate-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                <X size={16} /> Cancel
+                                            </button>
+                                        )}
+                                    </>
                                 ) : (
                                     <>
                                         <button

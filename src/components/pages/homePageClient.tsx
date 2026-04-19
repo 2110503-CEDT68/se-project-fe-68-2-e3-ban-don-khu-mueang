@@ -2,16 +2,24 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MassageShop } from "@/src/types/interface";
+import { MassageShop, Promotion } from "@/src/types/interface";
 import { HomeHeroSearch } from "@/src/components/pages/homeHeroSearch";
 import { FeaturedShopsSection } from "@/src/components/features/shops/featuredShopsSection";
+import { PromotionBanner } from "@/src/components/features/promotion/promotionBanner";
 
 type HomePageClientProps = {
   shops: MassageShop[];
   loadError: string | null;
+  maxDiscount?: number;
+  promotions: Promotion[]; // 1. Added promotions to Props
 };
 
-export function HomePageClient({ shops, loadError }: HomePageClientProps) {
+export function HomePageClient({ 
+  shops, 
+  loadError, 
+  maxDiscount = 0, 
+  promotions 
+}: HomePageClientProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [showModal, setShowModal] = useState(true);
@@ -47,7 +55,6 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
 
   return (
     <>
-      
       <HomeHeroSearch
         searchInput={searchInput}
         isLoading={false}
@@ -56,10 +63,15 @@ export function HomePageClient({ shops, loadError }: HomePageClientProps) {
         onSearchChange={setSearchInput}
         onSearchSubmit={handleSearchSubmit}
       />
+      
+      {/* 2. Pass the promotions data into the banner */}
+      <PromotionBanner promotions={promotions} /> 
+      
       <FeaturedShopsSection
         featuredShops={featuredShops}
         isLoading={false}
         loadError={loadError}
+        maxDiscount={maxDiscount}
       />
     </>
   );

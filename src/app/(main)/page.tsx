@@ -1,6 +1,8 @@
-import { MassagesResponse } from "@/src/types/interface";
+import { MassagesResponse, Promotion } from "@/src/types/interface";
 import { apiBaseUrl } from "@/src/lib/config";
 import { HomePageClient } from "@/src/components/pages/homePageClient";
+import { getMaxActiveDiscount } from "@/src/lib/promotion/getMaxDiscount";
+import getPromotions from "@/src/lib/promotion/getPromotions";
 
 export const revalidate = 60;
 
@@ -49,9 +51,24 @@ export default async function Home({
   const resolvedSearchParams =
     searchParams instanceof Promise ? await searchParams : (searchParams ?? {});
 
-  const { shops, loadError } = await getMainPageShops();
+  // Fetch the full promotions array concurrently
+  const [{ shops, loadError }, maxDiscount, promotionsResponse] = await Promise.all([
+    getMainPageShops(),
+    getMaxActiveDiscount(),
+    getPromotions<Promotion>("") // Empty string because the route is public
+  ]);
+  
   const authError = getErrorMessage(resolvedSearchParams);
   const displayError = authError || loadError;
+  const promotionsData = promotionsResponse?.data || []; // Extract the array safely
 
-  return <HomePageClient shops={shops} loadError={displayError} />;
+  // Pass promotionsData into the client component
+  return (
+    <HomePageClient 
+      shops={shops} 
+      loadError={displayError} 
+      maxDiscount={maxDiscount} 
+      promotions={promotionsData} 
+    />
+  );
 }

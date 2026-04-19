@@ -5,12 +5,14 @@ type FeaturedShopsSectionProps = {
   featuredShops: MassageShop[];
   isLoading: boolean;
   loadError: string | null;
+  maxDiscount?: number;
 };
 
 export function FeaturedShopsSection({
   featuredShops,
   isLoading,
   loadError,
+  maxDiscount = 0,
 }: FeaturedShopsSectionProps) {
   return (
     <section className="bg-surface px-6 py-24 lg:px-20">
@@ -39,10 +41,10 @@ export function FeaturedShopsSection({
       ) : (
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {featuredShops.map((shop) => (
-            <ShopCard key={shop._id} shop={shop} />
+            <ShopCard key={shop._id} shop={shop} maxDiscount={maxDiscount} />
           ))}
         </div>
       )}
     </section>
   );
-}
+}

@@ -6,6 +6,7 @@ import getShopById from "@/src/lib/shop/getShopById";
 import getSessionAuthContext from "@/src/lib/auth/getSessionAuthContext";
 import ShopReviewSection from "@/src/components/features/shops/shopReviewSection";
 import getShopReview from "@/src/lib/review/getShopReview";
+import { getMaxActiveDiscount } from "@/src/lib/promotion/getMaxDiscount";
 
 type MassageShopDetailPageProps = {
   params: Promise<{
@@ -23,17 +24,25 @@ export default async function MassageShopDetailPage({
   params,
 }: MassageShopDetailPageProps) {
   const { id } = await params;
-  const { session } = await getSessionAuthContext();
-  const response = await getShopById<MassageShop>(id);
-  const reviewResponse = await getShopReview(id);
+  
+  // FIX: Run all the async fetches ONCE inside Promise.all for maximum speed!
+  const [shopResponse, { session }, reviewResponse, maxDiscount] = await Promise.all([
+    getShopById<MassageShop>(id),
+    getSessionAuthContext(),
+    getShopReview(id),
+    getMaxActiveDiscount()
+  ]);
 
-  if (!response?.data) {
+  if (!shopResponse?.data) {
     notFound();
   }
 
-  const shop = response.data;
+  const shop = shopResponse.data;
   const pictures = shop.pictures?.length ? shop.pictures : [FALLBACK_IMAGE];
   const isSignedIn = Boolean(session?.user);
+
+  const discountAmount = shop.price * (maxDiscount / 100);
+  const discountedPrice = shop.price - discountAmount;
 
   return (
     <section className="bg-surface px-6 py-12 lg:px-20">
@@ -110,12 +119,30 @@ export default async function MassageShopDetailPage({
           </div>
 
           <div className="rounded-2xl bg-surface-container-low p-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-outline">
-              Starting Price
-            </p>
-            <p className="mt-3 font-headline text-3xl text-primary">
-              {shop.price.toLocaleString()} Baht
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-widest text-outline">
+                Starting Price
+              </p>
+              {maxDiscount > 0 && (
+                <span className="rounded-full bg-error px-2 py-1 text-xs font-bold text-on-error">
+                  -{maxDiscount}%
+                </span>
+              )}
+            </div>
+            {maxDiscount > 0 ? (
+              <div className="mt-3 flex flex-col">
+                <span className="text-base text-on-surface-variant line-through">
+                  {shop.price.toLocaleString()} Baht
+                </span>
+                <p className="font-headline text-3xl text-primary">
+                  {discountedPrice.toLocaleString()} Baht
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 font-headline text-3xl text-primary">
+                {shop.price.toLocaleString()} Baht
+              </p>
+            )}
             <p className="mt-1 text-sm text-outline">
               Rating {shop.averageRating} ({shop.userRatingCount} reviews)
             </p>
@@ -148,7 +175,7 @@ export default async function MassageShopDetailPage({
                   : "Sign in to continue with your booking flow."}
               </p>
               <Link
-                href={isSignedIn ? `/booking?id=${shop.id}&name=${encodeURIComponent(shop.name)}&price=${shop.price}` : `/login?callbackUrl=${encodeURIComponent(`/booking?id=${shop.id}&name=${encodeURIComponent(shop.name)}&price=${shop.price}`)}`}
+                href={isSignedIn ? `/booking?id=${shop.id}&name=${encodeURIComponent(shop.name)}&price=${shop.price}` : `/login?callbackUrl=${encodeURIComponent(`/booking?id=${shop.id}&name=${encodeURIComponent(shop.name)}&price=${discountedPrice}`)}`}
                 className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-white px-6 py-4 text-base font-bold text-primary transition-opacity hover:opacity-90"
               >
                 {isSignedIn ? "Book Now" : "Sign In to Book"}

@@ -13,11 +13,13 @@ export default async function AdminPromotionsPage() {
     
     let promotionsData = [];
     try {
-        // FIX: Pass the token into the getPromotions function here!
         const response = await getPromotions(token || "");
-        promotionsData = response.data || [];
+        
+        // FIX: Added the question mark right here!
+        promotionsData = response?.data || []; 
+        
     } catch (error) {
-        console.error("Error fetching promotions:", error);
+        console.error("Error setting up promotions:", error);
     }
 
     return (

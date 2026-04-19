@@ -8,6 +8,7 @@ type MassageShopsListClientProps = {
   shops: MassageShop[];
   loadError: string | null;
   searchQuery?: string;
+  maxDiscount?: number;
 };
 
 const SORT_OPTIONS = [
@@ -25,6 +26,7 @@ export function MassageShopsListClient({
   shops,
   loadError,
   searchQuery = "",
+  maxDiscount = 0,
 }: MassageShopsListClientProps) {
   const [searchInput, setSearchInput] = useState(searchQuery);
   const [sortBy, setSortBy] = useState<SortOptionValue>("rating-desc");
@@ -42,16 +44,19 @@ export function MassageShopsListClient({
       : shops;
 
     return [...visibleShops].sort((left, right) => {
+      const leftDiscountedPrice = left.price * (1 - maxDiscount / 100);
+      const rightDiscountedPrice = right.price * (1 - maxDiscount / 100);
+
       if (sortBy === "rating-asc") {
         return left.averageRating - right.averageRating;
       }
 
       if (sortBy === "price-asc") {
-        return left.price - right.price;
+        return leftDiscountedPrice - rightDiscountedPrice;
       }
 
       if (sortBy === "price-desc") {
-        return right.price - left.price;
+        return rightDiscountedPrice - leftDiscountedPrice;
       }
 
       if (sortBy === "name-asc") {
@@ -64,7 +69,7 @@ export function MassageShopsListClient({
 
       return right.averageRating - left.averageRating;
     });
-  }, [searchInput, shops, sortBy]);
+  }, [searchInput, shops, sortBy, maxDiscount]);
 
   const handleReset = () => {
     setSearchInput("");
@@ -127,11 +132,11 @@ export function MassageShopsListClient({
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredShops.map((shop) => (
-              <ShopCard key={shop._id} shop={shop} />
+              <ShopCard key={shop._id} shop={shop} maxDiscount={maxDiscount} />
             ))}
           </div>
         )}
       </div>
     </>
   );
-}
+}
