@@ -2,6 +2,6 @@
 
 # Project Setup  
 1. rename `.env.example` to `.env.local`
-2. generate sec
+2. generate secret with openssl  
 3. `npm install`
 4. `npm run dev`
