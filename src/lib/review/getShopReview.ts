@@ -8,7 +8,7 @@ export interface ReviewUser {
 export interface ReviewData {
     _id: string;
     rating: number;
-    comment: string;
+    comment?: string; // Made this optional just in case!
     user: ReviewUser;
     massage: string;
     reservation?: string;
@@ -24,7 +24,8 @@ export interface ShopReviewResponse {
 export default async function getShopReview(id: string): Promise<ShopReviewResponse | null> {
     try {
         const response = await fetch(`${apiBaseUrl}/api/massages/${id}/reviews`, {
-            next: { revalidate: 60 },
+            method: "GET",
+            cache: "no-store", // <--- FIXED: Prevents the caching bug!
         });
 
         if (!response.ok) {

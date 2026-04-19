@@ -6,7 +6,8 @@ import HistoryReviewCard from "@/src/components/features/history/HistoryReviewCa
 import getShopById from "@/src/lib/shop/getShopById";
 import { MassageShop } from "@/src/types/interface";
 import getReviews from "@/src/lib/review/getReviews";
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export default async function HistoryPage() {
     const session = await getServerSession(authOptions);
     const token = session?.user?.token;

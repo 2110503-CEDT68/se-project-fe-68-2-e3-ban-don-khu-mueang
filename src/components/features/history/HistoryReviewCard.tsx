@@ -10,8 +10,8 @@ import deleteReview from "@/src/lib/review/deleteReview";
 import ConfirmDeleteModal from "@/src/components/ui/ConfirmDeleteModal";
 
 interface HistoryReviewCardProps {
-    id: string;
-    reviewId?: string; // The ID passed down from the parent
+    id: string; // The Reservation ID
+    reviewId?: string; // The Review ID (if it exists)
     massageName: string;
     imageSrc: string;
     completedOn: string;
@@ -38,30 +38,29 @@ export default function HistoryReviewCard({
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    // Track if it exists in the UI, AND track the actual database ID
     const [isExistingReview, setIsExistingReview] = useState(Boolean(initialRating));
-    
-    // FIX 1: Turn reviewId into a state variable so we can update it without a refresh
     const [currentReviewId, setCurrentReviewId] = useState<string | undefined>(reviewId);
 
     const persistReview = async () => {
-        const trimmedComment = comment.trim();
-
         if (isSaved || !rating) return;
 
         setIsSubmitting(true);
         setSubmitError(null);
 
         try {
-            if (isExistingReview) {
-                // UPDATE
-                await updateReview(id, rating, token, trimmedComment || undefined);
+            const safeComment = comment || "";
+            const trimmedComment = safeComment.trim();
+
+            // THE FIX: Only attempt an UPDATE if we actually have a database Review ID.
+            // If it's a "ghost" rating from the reservation, it will hit the ELSE block and properly CREATE it!
+            if (currentReviewId) {
+                await updateReview(currentReviewId, rating, token, trimmedComment || undefined);
             } else {
-                // CREATE
                 const response = await rateReservation(id, rating, token, trimmedComment || undefined);
                 setIsExistingReview(true); 
                 
-                // FIX 2: Capture the newly generated ID from the backend response and save it!
-                // (Adjust this path if your backend returns the ID slightly differently, e.g., response._id)
+                // Save the new ID so future clicks know to Update instead of Create
                 if (response && response.data && response.data._id) {
                     setCurrentReviewId(response.data._id);
                 }
@@ -71,7 +70,7 @@ export default function HistoryReviewCard({
             setIsSaved(true);
             setSavedAt(nextSavedAt);
 
-            if (trimmedComment !== comment) {
+            if (trimmedComment !== safeComment) {
                 setComment(trimmedComment);
             }
         } catch (error) {
@@ -95,15 +94,19 @@ export default function HistoryReviewCard({
         setIsSubmitting(true);
         setSubmitError(null);
 
-        // FIX 3: Use the STATE variable (currentReviewId) instead of the PROP
+        // THE FIX: If there is no Review ID, it means this is a ghost legacy rating. 
+        // We can't delete it from the backend Reviews collection, so we just clear the UI!
         if (!currentReviewId) {
-            setSubmitError("Cannot delete: Review ID is missing. Please refresh.");
+            setRating(null);
+            setComment("");
+            setIsSaved(false);
+            setSavedAt(null);
+            setIsExistingReview(false); 
             setIsSubmitting(false);
             return;
         }
 
         try {
-            // Pass currentReviewId here
             await deleteReview(currentReviewId, token); 
             
             setRating(null);
@@ -111,8 +114,6 @@ export default function HistoryReviewCard({
             setIsSaved(false);
             setSavedAt(null);
             setIsExistingReview(false); 
-            
-            // FIX 4: Clear the ID so it's ready for a brand new review if they change their mind
             setCurrentReviewId(undefined);
             
         } catch (error) {
@@ -176,7 +177,7 @@ export default function HistoryReviewCard({
                                     Comment
                                 </span>
                                 <textarea
-                                    value={comment}
+                                    value={comment || ""}
                                     onChange={(event) => setComment(event.target.value)}
                                     rows={4}
                                     placeholder="Write a short note about your experience..."

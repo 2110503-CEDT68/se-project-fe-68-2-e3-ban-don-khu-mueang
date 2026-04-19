@@ -39,7 +39,8 @@ export default async function getReservation(_token: string): Promise<Reservatio
         method: "GET",
         headers: {
             authorization: `Bearer ${_token}`
-        }
+        },
+        cache: "no-store"
     });
     if (!response.ok) throw new Error("Failed to fetch reservations");
     return response.json();

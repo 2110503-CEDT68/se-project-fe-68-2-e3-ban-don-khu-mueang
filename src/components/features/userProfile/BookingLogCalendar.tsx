@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
@@ -12,8 +12,12 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
   const [viewDate, setViewDate] = useState(new Date()); 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
+  const [todayStr, setTodayStr] = useState("");
+
+  useEffect(() => {
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  setTodayStr(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`);
+}, []);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -85,7 +89,7 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
 
             return (
               <button
-                key={day}
+                key={dateStr}
                 onClick={() => hasBooking && setSelectedDate(dateStr)}
                 className={buttonClasses}
               >

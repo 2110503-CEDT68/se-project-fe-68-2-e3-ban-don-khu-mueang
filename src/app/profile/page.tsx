@@ -5,7 +5,8 @@ import ProfileCalendarWidget from "@/src/components/features/userProfile/Booking
 
 // IMPORT your existing function! (Adjust the path if it's saved somewhere else)
 import getReservation from "@/src/lib/reservation/getReservation"; 
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export default async function UserProfilePage() {
   const { session, profile } = await getSessionAuthContext();
 

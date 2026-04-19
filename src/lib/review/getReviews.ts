@@ -20,13 +20,15 @@ export interface ReviewResult {
 }
 
 export default async function getReviews(token: string): Promise<ReviewResult> {
+    
     const response = await fetch(`${apiBaseUrl}/api/reviews/me`, {
         method: "GET",
         headers: {
             authorization: `Bearer ${token}`,
         },
+        cache: "no-store"
     });
-
+    
     if (!response.ok) {
         throw new Error("Failed to fetch my reviews");
     }
