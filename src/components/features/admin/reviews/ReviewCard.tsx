@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 interface Review {
   id: string
   userName: string
@@ -31,7 +33,7 @@ export default function ReviewCard({ review, onDelete }: ReviewCardProps) {
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <div style={{ width: "48px", height: "48px", borderRadius: "9999px", backgroundColor: "#D1D5DB", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope, sans-serif", fontSize: "18px", fontWeight: 600, color: "#4E6053" }}>
           {review.userAvatar
-            ? <img src={review.userAvatar} alt={review.userName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <Image src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${review.userAvatar}`} width={48} height={48} alt={review.userName}/>
             : review.userName.charAt(0).toUpperCase()
           }
         </div>

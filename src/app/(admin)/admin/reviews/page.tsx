@@ -21,6 +21,7 @@ export default async function ManageReviewsPage() {
   try {
     const response = await getAllReviews(token);
     rawReviews = response.data || [];
+    console.log("Fetched reviews:", rawReviews);
   } catch (error) {
     console.error("Error fetching reviews:", error);
   }
