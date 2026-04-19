@@ -1,7 +1,7 @@
-export default async function getAllReviews(token: string) {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+import { apiBaseUrl } from "../config";
 
-    const response = await fetch(`${backendUrl}/api/reviews`, {
+export default async function getAllReviews(token: string) {
+    const response = await fetch(`${apiBaseUrl}/api/reviews`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

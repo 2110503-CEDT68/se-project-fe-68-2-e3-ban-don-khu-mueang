@@ -1,8 +1,7 @@
-export default async function deleteReview(reviewId: string, token: string) {
-    // Make sure to use your actual backend URL environment variable if it's different
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+import { apiBaseUrl } from "../config";
 
-    const response = await fetch(`${backendUrl}/api/reviews/${reviewId}`, {
+export default async function deleteReview(reviewId: string, token: string) {
+    const response = await fetch(`${apiBaseUrl}/api/reviews/${reviewId}`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
