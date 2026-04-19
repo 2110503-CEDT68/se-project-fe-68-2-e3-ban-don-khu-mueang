@@ -47,3 +47,5 @@ lint-result.txt
 .dockerignore
 /auto/
 
+pnpm-lock.yaml
+pnpm-workspace.yaml
