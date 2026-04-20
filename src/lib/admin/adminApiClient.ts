@@ -1,5 +1,6 @@
 // services/adminApiClient.ts
 import { apiBaseUrl } from "../config";
+import { toBangkokOffsetDateTime } from "../dateTime";
 import type {
   ApiListResponse,
   ApiItemResponse,
@@ -89,9 +90,11 @@ export class AdminApiClient {
   }
 
   async updateReservationDate(reservationId: string, reserveDate: string) {
+    const bangkokReserveDate = toBangkokOffsetDateTime(reserveDate);
+
     return this.fetch<{ success: boolean; data: AdminReservation }>(
       `/api/reservations/${reservationId}`,
-      { method: "PUT", body: JSON.stringify({ reserveDate }) }
+      { method: "PUT", body: JSON.stringify({ reserveDate: bangkokReserveDate }) }
     );
   }
 

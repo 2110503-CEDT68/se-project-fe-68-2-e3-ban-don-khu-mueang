@@ -1,4 +1,5 @@
 import { apiBaseUrl } from "../config";
+import { toBangkokOffsetDateTime } from "../dateTime";
 
 export default async function addReservation(
     massageId: string,
@@ -8,6 +9,8 @@ export default async function addReservation(
     discount: { name: string; amount: number }[], // Added discount array
     token: string
 ) {
+    const bangkokReserveDate = toBangkokOffsetDateTime(reserveDate);
+
     if (isNaN(price) || isNaN(netPrice) || price === null || netPrice === null) {
         throw new Error("Price calculation error. Please refresh and try again.");
     }
@@ -19,7 +22,7 @@ export default async function addReservation(
             authorization: `Bearer ${token}`
         },
         // Include the discount array in the request body
-        body: JSON.stringify({ reserveDate, price, netPrice, discount }) 
+        body: JSON.stringify({ reserveDate: bangkokReserveDate, price, netPrice, discount }) 
     });
 
     if (!response.ok) {

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import addReservation from "@/src/lib/reservation/addReservation";
 import getPromotions from "@/src/lib/promotion/getPromotions";
 import { Promotion } from "@/src/types/interface";
+import { toBangkokOffsetDateTime } from "@/src/lib/dateTime";
 
 function BookingForm() {
     const searchParams = useSearchParams();
@@ -86,7 +87,7 @@ function BookingForm() {
         try {
             await addReservation(
                 shopId,
-                new Date(reserveDate).toISOString(),
+                toBangkokOffsetDateTime(reserveDate),
                 shopPrice,
                 netPrice, 
                 discountPayload, // <-- Pass the array down
@@ -108,7 +109,7 @@ function BookingForm() {
                 <label className="text-xs font-bold uppercase tracking-[0.6px] text-[#737873]">
                     current Shop name
                 </label>
-                <div className="flex h-[58px] items-center rounded-xl border border-[#C3C8C2] bg-white px-5">
+                <div className="flex h-14.5 items-center rounded-xl border border-[#C3C8C2] bg-white px-5">
                     <p>{shopName}</p>
                 </div>
             </div>
@@ -117,7 +118,7 @@ function BookingForm() {
                 <label className="text-xs font-bold uppercase tracking-[0.6px] text-[#737873]">
                     1. Pick Your Date & Time
                 </label>
-                <div className="flex h-[58px] items-center rounded-xl border border-[#C3C8C2] bg-white px-5">
+                <div className="flex h-14.5 items-center rounded-xl border border-[#C3C8C2] bg-white px-5">
                     <input
                         type="datetime-local"
                         value={reserveDate}
@@ -163,7 +164,7 @@ function BookingForm() {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`flex h-[68px] w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-[#4E6053] font-['Manrope'] text-lg font-bold text-white shadow-[0_10px_15px_-3px_rgba(78,96,83,0.1),0_4px_6px_-4px_rgba(78,96,83,0.1)] transition-opacity hover:opacity-90 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    className={`flex h-17 w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-[#4E6053] font-['Manrope'] text-lg font-bold text-white shadow-[0_10px_15px_-3px_rgba(78,96,83,0.1),0_4px_6px_-4px_rgba(78,96,83,0.1)] transition-opacity hover:opacity-90 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                     <span>{isSubmitting ? 'Confirming...' : 'Confirm Booking'}</span>
                 </button>
@@ -175,7 +176,7 @@ function BookingForm() {
 export default function Booking() {
     return (
         <div className="flex min-h-screen items-center justify-center p-4 bg-white">
-            <div className="box-border flex w-full max-w-[576px] flex-col gap-10 rounded-2xl border border-[#C3C8C2] bg-[#F3F4ED] p-12 pb-16 font-['Manrope'] shadow-sm">
+            <div className="box-border flex w-full max-w-xl flex-col gap-10 rounded-2xl border border-[#C3C8C2] bg-[#F3F4ED] p-12 pb-16 font-['Manrope'] shadow-sm">
                 <header className="flex flex-col items-center gap-3 text-center">
                     <h1 className="m-0 font-['Noto_Serif'] text-4xl font-normal leading-tight text-[#1A1C18]">
                         Book Your Massage

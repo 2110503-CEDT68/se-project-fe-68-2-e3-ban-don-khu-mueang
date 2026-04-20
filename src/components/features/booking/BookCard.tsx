@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import updateReservation from '../../../lib/reservation/updateReservation';
 import deleteReservation from '../../../lib/reservation/deleteReservation';
 import Image from 'next/image';
+import { toBangkokOffsetDateTime } from '@/src/lib/dateTime';
 
 interface BookCardProps {
     id?: string;
@@ -45,11 +46,10 @@ export default function BookCard({
     const handleSave = async () => {
         if (!id || !token) return;
         setIsSubmitting(true);
-        // Combine date and time
-        const newReserveDate = new Date(`${editDate}T${editTime}:00`);
+        const bangkokReserveDate = toBangkokOffsetDateTime(`${editDate}T${editTime}:00`);
 
         try {
-            await updateReservation(id, newReserveDate.toISOString(), token);
+            await updateReservation(id, bangkokReserveDate, token);
             setIsEditing(false);
             router.refresh();
         } catch (err) {

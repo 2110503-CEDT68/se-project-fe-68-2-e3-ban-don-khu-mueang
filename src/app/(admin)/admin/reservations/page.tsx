@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { AdminApiClient } from "@/src/lib/admin/adminApiClient";
 import requireAdminAuth from "@/src/lib/admin/requireAdminAuth";
 import ReservationsListClient from "@/src/components/features/admin/reservations/reservationsListClient";
+import { toBangkokOffsetDateTime } from "@/src/lib/dateTime";
 
 export default async function ManageReservationsPage() {
 	const { session } = await requireAdminAuth();
@@ -36,7 +37,7 @@ export default async function ManageReservationsPage() {
 
 		await actionApi.updateReservationDate(
 			reservationId,
-			new Date(reserveDate).toISOString()
+			toBangkokOffsetDateTime(reserveDate)
 		);
 
 		revalidatePath("/admin/reservations");
