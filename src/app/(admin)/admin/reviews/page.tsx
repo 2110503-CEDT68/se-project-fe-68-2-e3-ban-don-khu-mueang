@@ -4,6 +4,7 @@ import getSessionAuthContext from "@/src/lib/auth/getSessionAuthContext";
 import getAllReviews from "@/src/lib/review/getAllReviews"; // We will create this below
 import deleteReview from "@/src/lib/review/deleteReview"; // The delete function we made earlier
 import ReviewsListClient from "@/src/components/features/admin/reviews/ReviewsListClient";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
 
 export default async function ManageReviewsPage() {
   await requireAdminAuth();
@@ -31,7 +32,10 @@ export default async function ManageReviewsPage() {
     id: review._id,
     userName: review.user?.name || "Unknown User",
     userEmail: review.user?.email || "No email",
-    userAvatar: review.user?._id || "default", // Using user ID so dicebear avatar works
+    userAvatar: getUserAvatarUrl(
+      review.user?.avatarUrl,
+      review.user?._id || review.user?.email || review.user?.name || "default",
+    ),
     rating: review.rating,
     comment: review.comment || "No comment provided.",
     // Formats ISO string (e.g. "2024-01-01T00:00:00.000Z") to "2024-01-01"

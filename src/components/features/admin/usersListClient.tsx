@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import type { AdminUser } from "@/src/types/api";
 import CreateAdminUserModal from "./createAdminUserModal";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
 
 type CreateAdminActionState = {
   success: boolean;
@@ -79,6 +80,13 @@ export default function UsersListClient({
 
           return true;
         })
+        .map((user) => ({
+          ...user,
+          resolvedAvatar: getUserAvatarUrl(
+            user.avatarUrl,
+            user._id ?? user.email ?? user.name,
+          ),
+        }))
         .sort((first, second) => {
           if (sortBy === "name-asc") {
             return first.name.localeCompare(second.name);
@@ -181,12 +189,12 @@ export default function UsersListClient({
             >
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary-fixed text-xl font-bold text-primary">
                 <Image
-                  src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${user._id}`}
-                  width={14}
-                  height={14}
+                  src={user.resolvedAvatar}
+                  width={50}
+                  height={50}
                   alt="User avatar"
                   // unoptimized={true}
-                  className="h-12 w-12 rounded-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               </div>
 

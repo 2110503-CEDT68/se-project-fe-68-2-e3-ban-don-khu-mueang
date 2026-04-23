@@ -3,12 +3,19 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
 
 interface CalendarProps {
   bookingLogs: Record<string, any[]>;
+  avatarUrl?: string | null;
+  avatarSeed?: string;
 }
 
-export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
+export default function ProfileCalendarWidget({
+  bookingLogs,
+  avatarUrl,
+  avatarSeed,
+}: CalendarProps) {
   const [viewDate, setViewDate] = useState(new Date()); 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -27,14 +34,15 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
   const offset = firstDay === 0 ? 6 : firstDay - 1;
 
   const monthLabel = viewDate.toLocaleString("en-US", { month: "long", year: "numeric" });
+  const avatarSrc = getUserAvatarUrl(avatarUrl, avatarSeed ?? "user");
 
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-slate-200">
-        <Image src="https://api.dicebear.com/9.x/notionists/svg?seed=pawong" alt="Avatar" fill unoptimized />
+        <Image src={avatarSrc} alt="Avatar" className="rounded-full" fill />
       </div>
 
-      <div className="w-[300px] shrink-0">
+      <div className="w-75 shrink-0">
         <div className="mb-4 flex items-center justify-between font-bold">
           <button onClick={() => setViewDate(new Date(year, month - 1))} className="hover:text-primary transition-colors"><ChevronLeft size={20}/></button>
           <span>{monthLabel}</span>
@@ -100,7 +108,7 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
         </div>
 
         {/* HEIGHT-LOCKED CONTAINER: ALWAYS extends to 220px no matter what */}
-        <div className="mt-6 h-[220px] w-full">
+        <div className="mt-6 h-55 w-full">
           {selectedDate && bookingLogs[selectedDate] ? (
             <div className="relative h-full overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3 animate-in fade-in zoom-in-95 duration-200">
               <p className="sticky top-0 z-10 mb-2 bg-slate-50 py-1 text-[10px] font-bold uppercase text-slate-500">

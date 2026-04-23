@@ -106,6 +106,7 @@ export default async function EditShopPage({ params }: EditShopPageProps) {
   return (
     <EditShopForm
       shop={shopResponse.data}
+      uploadToken={token}
       updateAction={updateShopAction}
       deleteAction={deleteShopAction}
     />

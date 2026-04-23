@@ -14,6 +14,7 @@ type ShopActionState = {
 
 type EditShopFormProps = {
   shop: AdminShop;
+  uploadToken: string;
   updateAction: (
     state: ShopActionState,
     formData: FormData,
@@ -38,6 +39,7 @@ function formatCurrency(value: number) {
 
 export default function EditShopForm({
   shop,
+  uploadToken,
   updateAction,
   deleteAction,
 }: EditShopFormProps) {
@@ -207,6 +209,8 @@ export default function EditShopForm({
               sectionDescription="Use the shared image editor to add, replace, or remove gallery URLs. Broken previews are flagged without losing the saved URL."
               addLabel="Add Media"
               emptyStateLabel="No gallery media has been added yet. Start by uploading the first image URL."
+              uploadToken={uploadToken}
+              massageId={shop._id}
             />
           </div>
 
