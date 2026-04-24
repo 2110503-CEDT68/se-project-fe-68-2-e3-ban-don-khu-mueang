@@ -124,16 +124,16 @@ jobs:
         run: |
           DEPLOYMENT_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "vercel_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
-      - name: Comment Preview URL on PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Preview Deployment 🔍\n✅ **Status:** Live\n🔗 **URL:** ${{ steps.deploy.outputs.vercel_url }}`
-            })
+      # - name: Comment Preview URL on PR
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: `## Preview Deployment 🔍\n✅ **Status:** Live\n🔗 **URL:** ${{ steps.deploy.outputs.vercel_url }}`
+      #       })
       - name: Create Deployment Summary
         run: |
           echo "## Preview Deployment 🔍" >> $GITHUB_STEP_SUMMARY
