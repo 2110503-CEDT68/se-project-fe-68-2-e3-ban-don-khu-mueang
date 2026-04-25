@@ -11,6 +11,7 @@ type CreateShopActionState = {
 };
 
 type CreateShopFormProps = {
+  uploadToken: string;
   action: (
     state: CreateShopActionState,
     formData: FormData,
@@ -22,7 +23,7 @@ const initialActionState: CreateShopActionState = {
   message: null,
 };
 
-export default function CreateShopForm({ action }: CreateShopFormProps) {
+export default function CreateShopForm({ action, uploadToken }: CreateShopFormProps) {
   const [actionState, formAction, isPending] = useActionState(
     action,
     initialActionState,
@@ -108,6 +109,7 @@ export default function CreateShopForm({ action }: CreateShopFormProps) {
           sectionTitle="Images"
           sectionDescription="Add image URLs, correct bad ones, and remove anything you do not want submitted."
           emptyStateLabel="No images added yet. Add at least one image to improve the listing preview."
+          uploadToken={uploadToken}
         />
 
         <div className="flex items-center justify-end gap-3">

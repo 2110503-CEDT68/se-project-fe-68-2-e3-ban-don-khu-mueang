@@ -10,15 +10,34 @@ export function toDatetimeLocal(value: string) {
 	)}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export function getUserMeta(value: string | { name?: string; email?: string; tel?: string }) {
+export function getUserMeta(
+    value:
+        | string
+        | {
+            _id?: string;
+            id?: string;
+            name?: string;
+            email?: string;
+            tel?: string;
+            avatarUrl?: string | null;
+        },
+) {
 	if (typeof value === "string") {
-		return { name: value, email: "-", tel: "-" };
+		return {
+			name: value,
+			email: "-",
+			tel: "-",
+			avatarUrl: null,
+			avatarSeed: value,
+		};
 	}
 
 	return {
 		name: value.name ?? value.email ?? "-",
 		email: value.email ?? "-",
 		tel: value.tel ?? "-",
+		avatarUrl: value.avatarUrl ?? null,
+		avatarSeed: value._id ?? value.id ?? value.email ?? value.name ?? "user",
 	};
 }
 

@@ -34,6 +34,8 @@ export interface PopulatedUser {
     name?: string;
     email?: string;
     tel?: string;
+    avatarKey?: string | null;
+    avatarUrl?: string | null;
 }
 
 export interface PopulatedMassage {
@@ -60,6 +62,8 @@ export interface AdminUser {
     tel: string;
     email: string;
     role: string;
+    avatarKey?: string | null;
+    avatarUrl?: string | null;
     createdAt?: string;
 }
 

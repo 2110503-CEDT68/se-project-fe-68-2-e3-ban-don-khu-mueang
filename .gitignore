@@ -49,3 +49,4 @@ lint-result.txt
 
 pnpm-lock.yaml
 pnpm-workspace.yaml
+public/swagger.json

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { redirect, notFound, unauthorized, forbidden } from "next/navigation";
 import getSessionAuthContext from "@/src/lib/auth/getSessionAuthContext";
 import AdminNav from "../../components/features/admin/adminNav";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
 
 export default async function AdminLayout({
 	children,
@@ -11,6 +12,10 @@ export default async function AdminLayout({
 	children: ReactNode;
 }>) {
 	const { session, profile, isAdmin } = await getSessionAuthContext();
+ const avatarSrc = getUserAvatarUrl(
+  profile?.data?.avatarUrl,
+  profile?.data?._id ?? profile?.data?.email ?? profile?.data?.name ?? "admin",
+ );
 
         if (!session?.user) {
                 redirect("/login?callbackUrl=/admin");
@@ -67,7 +72,7 @@ export default async function AdminLayout({
 									</p>
 								</div>
 								<Image
-									src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${profile?.data?._id ?? "admin"}`}
+									src={avatarSrc}
 									alt="User avatar"
 									width={40}
 									height={40}

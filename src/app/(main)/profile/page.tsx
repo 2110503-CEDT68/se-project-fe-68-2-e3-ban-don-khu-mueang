@@ -75,15 +75,22 @@ export default async function UserProfilePage() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-[1fr_1.5fr] md:gap-16">
           
           <section className="flex flex-col border-surface-container-high md:border-r md:pr-12">
-            <ProfileCalendarWidget bookingLogs={bookingLogs} />
+            <ProfileCalendarWidget
+              bookingLogs={bookingLogs}
+              avatarUrl={profile.data.avatarUrl ?? null}
+              avatarSeed={profile.data._id ?? profile.data.email ?? profile.data.name}
+            />
           </section>
 
           <section className="flex flex-col justify-start pt-6">
             <UserInfo 
               user={{
+                id: profile.data._id,
                 name: profile.data.name,
                 email: profile.data.email,
+                avatarUrl: profile.data.avatarUrl ?? null,
               }} 
+              token={session.user.token}
               stats={{
                 total: reservations.length,
                 ended: alreadyEndedCount,
