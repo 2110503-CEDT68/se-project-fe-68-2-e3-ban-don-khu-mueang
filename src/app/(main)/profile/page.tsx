@@ -80,9 +80,11 @@ export default async function UserProfilePage() {
 
           <section className="flex flex-col justify-start pt-6">
             <UserInfo 
+              token={session.user.token} // Add this line
               user={{
                 name: profile.data.name,
                 email: profile.data.email,
+                telephone: profile.data.tel, // Add this line
               }} 
               stats={{
                 total: reservations.length,

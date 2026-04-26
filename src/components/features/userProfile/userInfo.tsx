@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Eye,
   EyeOff,
@@ -14,7 +15,11 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+import updateUserDetails from "@/src/lib/auth/updateUserDetails";
+import updatePassword from "@/src/lib/auth/updatePassword";
+
 interface UserInfoProps {
+  token: string;
   user: {
     name: string;
     email: string;
@@ -38,6 +43,7 @@ function LockedField({
   onCancel,
   onChange,
   type = "text",
+  maxLength, // Add maxLength prop
 }: {
   icon: React.ReactNode;
   label: string;
@@ -48,6 +54,7 @@ function LockedField({
   onCancel: () => void;
   onChange: (v: string) => void;
   type?: string;
+  maxLength?: number;
 }) {
   return (
     <div className="space-y-1">
@@ -60,6 +67,7 @@ function LockedField({
           type={type}
           value={value}
           readOnly={locked}
+          maxLength={maxLength} // Apply maxLength to input
           onChange={(e) => onChange(e.target.value)}
           className={`flex-1 bg-transparent text-sm outline-none transition-colors ${
             locked ? "cursor-default text-slate-600" : "text-slate-900"
@@ -130,32 +138,38 @@ function ConfirmPasswordModal({
   title,
   onConfirm,
   onClose,
+  isLoading,
+  errorMsg
 }: {
   title: string;
   onConfirm: (pw: string) => void;
   onClose: () => void;
+  isLoading: boolean;
+  errorMsg?: string;
 }) {
   const [pw, setPw] = useState("");
   return (
     <ModalShell title={title} onClose={onClose}>
       <p className="text-sm text-slate-500 mb-4">
-        Please enter your <span className="font-semibold text-slate-700">current password</span> to
-        confirm this change.
+        Please enter your <span className="font-semibold text-slate-700">current password</span> to confirm this change.
       </p>
       <PasswordInput label="Current password" value={pw} onChange={setPw} />
+      {errorMsg && <p className="text-xs text-red-500 mt-2 font-medium">{errorMsg}</p>}
+      
       <div className="mt-6 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+          disabled={isLoading}
+          className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={() => onConfirm(pw)}
-          disabled={!pw}
+          disabled={!pw || isLoading}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-40 transition-colors"
         >
-          Confirm &amp; Save
+          {isLoading ? "Saving..." : "Confirm & Save"}
         </button>
       </div>
     </ModalShell>
@@ -191,7 +205,9 @@ function ModalShell({
 }
 
 // ─── main component ──────────────────────────────────────────────────────────
-export default function UserInfo({ user, stats }: UserInfoProps) {
+export default function UserInfo({ token, user, stats }: UserInfoProps) {
+  const router = useRouter();
+
   // live user data
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
@@ -200,6 +216,9 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
   // modal state
   type Modal = "editInfo" | "confirmInfo" | "editPassword" | null;
   const [modal, setModal] = useState<Modal>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [infoError, setInfoError] = useState("");
 
   // edit-info draft
   const [draftName, setDraftName] = useState(name);
@@ -230,6 +249,8 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
     setLockedName(true);
     setLockedEmail(true);
     setLockedTel(true);
+    setApiError("");
+    setInfoError("");
     setModal("editInfo");
   };
 
@@ -238,30 +259,93 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
     setNewPassword("");
     setConfirmPassword("");
     setPwError("");
+    setApiError("");
     setModal("editPassword");
   };
 
   const handleInfoSaveClick = () => {
+    // 1. Validate Name with 50 chars limit
+    if (!draftName.trim() || draftName.length > 50) {
+      setInfoError("Name cannot be empty and must be under 50 characters.");
+      return;
+    }
+
+    // 2. Validate Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!draftEmail.trim() || !emailRegex.test(draftEmail)) {
+      setInfoError("Please enter a valid email address.");
+      return;
+    }
+
+    // 3. Validate Telephone (Optional, but if provided must match xxx-xxx-xxxx)
+    const telRegex = /^\d{3}-\d{3}-\d{4}$/;
+    if (draftTel.trim() && !telRegex.test(draftTel)) {
+      setInfoError("Telephone must be in xxx-xxx-xxxx format.");
+      return;
+    }
+
+    // If everything passes, clear errors and go to the password confirm modal
+    setInfoError("");
+    setApiError("");
     setModal("confirmInfo");
   };
 
-  const handleInfoConfirm = (_pw: string) => {
-    // In production, verify _pw server-side before applying
-    setName(draftName);
-    setEmail(draftEmail);
-    setTelephone(draftTel);
-    setModal(null);
-    showToast("Personal info updated successfully.");
+  const handleInfoConfirm = async (pw: string) => {
+    setIsLoading(true);
+    setApiError("");
+    try {
+      await updateUserDetails(token, {
+        name: draftName,
+        email: draftEmail,
+        tel: draftTel,
+        currentPassword: pw,
+      });
+
+      setName(draftName);
+      setEmail(draftEmail);
+      setTelephone(draftTel);
+      setModal(null);
+      showToast("Personal info updated successfully.");
+      
+      // Refresh Next.js server component to reflect changes globally
+      router.refresh(); 
+    } catch (err: any) {
+      const errorMessage = err.message.replace("Error: ", "");
+      
+      // Check if the backend error is about a duplicate email
+      if (
+        errorMessage.toLowerCase().includes("duplicate") || 
+        errorMessage.toLowerCase().includes("email already in use") ||
+        errorMessage.includes("E11000") // Mongoose duplicate key error code
+      ) {
+        // Kick them back to the previous modal so they can fix the email
+        setModal("editInfo");
+        setInfoError("This email is already registered to another account.");
+      } else {
+        setApiError(errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handlePasswordSaveClick = () => {
+  const handlePasswordSaveClick = async () => {
     if (!currentPassword) { setPwError("Please enter your current password."); return; }
     if (!newPassword) { setPwError("Please enter a new password."); return; }
     if (newPassword !== confirmPassword) { setPwError("Passwords do not match."); return; }
+    
+    setIsLoading(true);
     setPwError("");
-    // In production, call your auth API with currentPassword + newPassword here
-    setModal(null);
-    showToast("Password changed successfully.");
+    try {
+      await updatePassword(token, currentPassword, newPassword);
+
+      setModal(null);
+      showToast("Password changed successfully.");
+    } catch (err: any) {
+      setPwError(err.message.replace("Error: ", ""));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -289,15 +373,13 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
       <div className="flex gap-2 pt-1">
         <button
           onClick={openEditInfo}
-          className="flex-1 rounded-lg bg-slate-900 py-2 text-xs font-semibold text-white
-                     hover:bg-slate-700 transition-all shadow-sm"
+          className="flex-1 rounded-lg bg-slate-900 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition-all shadow-sm"
         >
           Edit Personal Info
         </button>
         <button
           onClick={openEditPassword}
-          className="flex-1 rounded-lg border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700
-                     hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+          className="flex-1 rounded-lg border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
         >
           Edit Password
         </button>
@@ -325,9 +407,9 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
       {modal === "editInfo" && (
         <ModalShell title="Edit Personal Info" onClose={() => setModal(null)}>
           <p className="text-xs text-slate-400 mb-4">
-            Click the <Pencil size={11} className="inline mb-0.5" /> icon next to a field to enable
-            editing.
+            Click the <Pencil size={11} className="inline mb-0.5" /> icon next to a field to enable editing.
           </p>
+          
           <div className="space-y-3">
             <LockedField
               icon={<User size={14} />}
@@ -338,6 +420,7 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
               onUnlock={() => setLockedName(false)}
               onCancel={() => setLockedName(true)}
               onChange={setDraftName}
+              maxLength={50} // 👈 Character limit added here
             />
             <LockedField
               icon={<Mail size={14} />}
@@ -362,6 +445,12 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
               type="tel"
             />
           </div>
+          
+          {/* Display the validation error if it exists */}
+          {infoError && (
+            <p className="text-xs text-red-500 mt-3 font-medium">{infoError}</p>
+          )}
+
           <div className="mt-6 flex justify-end gap-2">
             <button
               onClick={() => setModal(null)}
@@ -385,9 +474,12 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
           title="Confirm Your Identity"
           onConfirm={handleInfoConfirm}
           onClose={() => setModal("editInfo")}
+          isLoading={isLoading}
+          errorMsg={apiError}
         />
       )}
 
+      {/* Edit Password */}
       {modal === "editPassword" && (
         <ModalShell title="Edit Password" onClose={() => setModal(null)}>
           <div className="space-y-3">
@@ -411,20 +503,22 @@ export default function UserInfo({ user, stats }: UserInfoProps) {
                 placeholder="Repeat new password"
               />
             </div>
-            {pwError && <p className="text-xs text-red-500">{pwError}</p>}
+            {pwError && <p className="text-xs text-red-500 font-medium">{pwError}</p>}
           </div>
           <div className="mt-6 flex justify-end gap-2">
             <button
               onClick={() => setModal(null)}
-              className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+              disabled={isLoading}
+              className="rounded-lg border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handlePasswordSaveClick}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 transition-colors"
+              disabled={isLoading}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              Save Password
+              {isLoading ? "Saving..." : "Save Password"}
             </button>
           </div>
         </ModalShell>
