@@ -13,6 +13,7 @@ typescript: {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  output: "standalone",
   images: {
     loader: "custom",
     loaderFile: "./src/lib/image.ts",
