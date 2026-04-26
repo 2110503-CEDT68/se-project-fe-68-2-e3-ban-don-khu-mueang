@@ -22,9 +22,11 @@ export function PromotionCard({ promotion }: PromotionCardProps) {
         <span className="uppercase tracking-widest text-sm font-semibold text-[var(--primary-fixed)] mb-4">
           {promotion.tagline}
         </span>
-        <h2 className="font-serif text-[var(--on-primary)] text-4xl lg:text-5xl leading-tight mb-6 max-w-lg">
-          {promotion.title}
-        </h2>
+        <div className="mb-6 min-h-[6.5rem] max-w-lg overflow-hidden flex items-start">
+          <h2 className="font-serif text-[var(--on-primary)] text-4xl lg:text-5xl leading-[1.05] break-words">
+            {promotion.title}
+          </h2>
+        </div>
         <p className="font-sans text-[var(--on-primary-container)] text-lg mb-10 max-w-md opacity-90 leading-relaxed">
           {promotion.description}
         </p>

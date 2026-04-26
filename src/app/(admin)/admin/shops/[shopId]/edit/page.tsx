@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { AdminApiClient } from "@/src/lib/admin/adminApiClient";
 import requireAdminAuth from "@/src/lib/admin/requireAdminAuth";
-import EditShopForm from "../../../../../../components/features/shops/editShopForm";
+import EditShopForm from "@/src/components/features/admin/shops/editShopForm"
 
 type ShopActionState = {
   success: boolean;
@@ -106,6 +106,7 @@ export default async function EditShopPage({ params }: EditShopPageProps) {
   return (
     <EditShopForm
       shop={shopResponse.data}
+      uploadToken={token}
       updateAction={updateShopAction}
       deleteAction={deleteShopAction}
     />

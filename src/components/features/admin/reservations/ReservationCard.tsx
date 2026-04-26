@@ -8,6 +8,7 @@ import {
 	getStatus,
 	toDatetimeLocal,
 } from "./reservationUtils";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
 
 type ReservationCardProps = {
 	reservation: AdminReservation;
@@ -22,6 +23,8 @@ export default function ReservationCard({
 }: ReservationCardProps) {
 	const editId = `edit-reservation-${reservation._id}`;
 	const userMeta = getUserMeta(reservation.user);
+	console.log("User meta:", userMeta);
+	const userAvatar = getUserAvatarUrl(userMeta.avatarUrl, userMeta.avatarSeed);
 	const massageMeta = getMassageMeta(reservation.massage);
 	const reserveDate = new Date(reservation.reserveDate);
 	const status = getStatus(reservation.reserveDate, reservation.isRated);
@@ -53,7 +56,7 @@ export default function ReservationCard({
 					<div className="flex items-center gap-3">
 						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-container text-xs font-bold text-on-secondary-container">
 							<Image
-								src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${userMeta.name.split(" ")[0]}`}
+								src={userAvatar}
 								alt="User avatar"
 								width={40}
 								height={40}

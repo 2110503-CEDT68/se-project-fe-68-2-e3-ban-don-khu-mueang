@@ -18,6 +18,8 @@ export default async function ManageReservationsPage() {
 		data: [],
 	}));
 
+	console.log(reservationsResponse.data[0])
+
 	const hasNextPage = Boolean(reservationsResponse.pagination?.next);
 
 	async function updateReservationAction(formData: FormData) {

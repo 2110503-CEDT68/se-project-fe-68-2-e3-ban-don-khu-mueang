@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
 
 const dropdownMenuLinks = [
   { href: "/admin", label: "Admin Dashboard", authRequired: true, adminOnly: true },
@@ -13,6 +14,10 @@ const dropdownMenuLinks = [
 export default function UserAuthNav({ profile, isAdmin }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const avatarSrc = getUserAvatarUrl(
+    profile?.data?.avatarUrl,
+    profile?.data?._id ?? profile?.data?.email ?? profile?.data?.name ?? "user",
+  );
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -38,11 +43,11 @@ export default function UserAuthNav({ profile, isAdmin }) {
             aria-expanded={isOpen}
           >
             <Image
-              src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${profile.data._id}`}
+              src={avatarSrc}
               alt="User avatar"
-              width={40}
-              height={40}
-              // unoptimized
+              width={256}
+              height={256}
+              className="rounded-full w-12 h-12 object-cover"
             />
           </button>
           

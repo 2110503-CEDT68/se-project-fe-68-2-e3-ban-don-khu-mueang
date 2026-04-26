@@ -14,13 +14,14 @@ import {
   CheckCircle2,
   RotateCcw,
 } from "lucide-react";
-
 import updateUserDetails from "@/src/lib/auth/updateUserDetails";
 import updatePassword from "@/src/lib/auth/updatePassword";
+import { apiBaseUrl } from "@/src/lib/config";
 
 interface UserInfoProps {
   token: string;
   user: {
+    id?: string;
     name: string;
     email: string;
     telephone?: string;
@@ -32,7 +33,7 @@ interface UserInfoProps {
   };
 }
 
-// ─── tiny reusable locked field ────────────────────────────────────────────
+// ─── Helper Components ────────────────────────────────────────────────────────
 function LockedField({
   icon,
   label,
@@ -43,7 +44,7 @@ function LockedField({
   onCancel,
   onChange,
   type = "text",
-  maxLength, // Add maxLength prop
+  maxLength,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -67,7 +68,7 @@ function LockedField({
           type={type}
           value={value}
           readOnly={locked}
-          maxLength={maxLength} // Apply maxLength to input
+          maxLength={maxLength}
           onChange={(e) => onChange(e.target.value)}
           className={`flex-1 bg-transparent text-sm outline-none transition-colors ${
             locked ? "cursor-default text-slate-600" : "text-slate-900"
@@ -95,7 +96,6 @@ function LockedField({
   );
 }
 
-// ─── password input ─────────────────────────────────────────────────────────
 function PasswordInput({
   label,
   value,
@@ -133,7 +133,6 @@ function PasswordInput({
   );
 }
 
-// ─── confirm-password modal ──────────────────────────────────────────────────
 function ConfirmPasswordModal({
   title,
   onConfirm,
@@ -176,7 +175,6 @@ function ConfirmPasswordModal({
   );
 }
 
-// ─── modal shell ────────────────────────────────────────────────────────────
 function ModalShell({
   title,
   onClose,
@@ -204,11 +202,11 @@ function ModalShell({
   );
 }
 
-// ─── main component ──────────────────────────────────────────────────────────
-export default function UserInfo({ token, user, stats }: UserInfoProps) {
+// ─── Main Component ────────────────────────────────────────────────────────
+export default function UserInfo({ user, token, stats }: UserInfoProps) {
   const router = useRouter();
 
-  // live user data
+  // user data state
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [telephone, setTelephone] = useState(user.telephone ?? "");
@@ -234,7 +232,6 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwError, setPwError] = useState("");
 
-  // toast
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -263,8 +260,8 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
     setModal("editPassword");
   };
 
-  const handleInfoSaveClick = () => {
-    // 1. Validate Name with 50 chars limit
+  const handleInfoSaveClick = async () => {
+    // 1. Validate Name
     if (!draftName.trim() || draftName.length > 50) {
       setInfoError("Name cannot be empty and must be under 50 characters.");
       return;
@@ -277,11 +274,40 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
       return;
     }
 
-    // 3. Validate Telephone (Optional, but if provided must match xxx-xxx-xxxx)
+    // 3. Validate Telephone
     const telRegex = /^\d{3}-\d{3}-\d{4}$/;
     if (draftTel.trim() && !telRegex.test(draftTel)) {
       setInfoError("Telephone must be in xxx-xxx-xxxx format.");
       return;
+    }
+
+    // 4. Check duplicate email with backend BEFORE asking for password
+    if (draftEmail !== email) {
+      setIsLoading(true);
+      setInfoError("");
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/auth/checkemail`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ email: draftEmail }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setInfoError(data.message || "This email is already registered to another account.");
+          setIsLoading(false);
+          return; // Stop here, don't open password modal
+        }
+      } catch (err) {
+        setInfoError("Failed to verify email availability. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(false);
     }
 
     // If everything passes, clear errors and go to the password confirm modal
@@ -307,18 +333,14 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
       setModal(null);
       showToast("Personal info updated successfully.");
       
-      // Refresh Next.js server component to reflect changes globally
       router.refresh(); 
     } catch (err: any) {
       const errorMessage = err.message.replace("Error: ", "");
-      
-      // Check if the backend error is about a duplicate email
       if (
         errorMessage.toLowerCase().includes("duplicate") || 
         errorMessage.toLowerCase().includes("email already in use") ||
-        errorMessage.includes("E11000") // Mongoose duplicate key error code
+        errorMessage.includes("E11000")
       ) {
-        // Kick them back to the previous modal so they can fix the email
         setModal("editInfo");
         setInfoError("This email is already registered to another account.");
       } else {
@@ -338,7 +360,6 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
     setPwError("");
     try {
       await updatePassword(token, currentPassword, newPassword);
-
       setModal(null);
       showToast("Password changed successfully.");
     } catch (err: any) {
@@ -420,7 +441,7 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
               onUnlock={() => setLockedName(false)}
               onCancel={() => setLockedName(true)}
               onChange={setDraftName}
-              maxLength={50} // 👈 Character limit added here
+              maxLength={50}
             />
             <LockedField
               icon={<Mail size={14} />}
@@ -446,7 +467,6 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
             />
           </div>
           
-          {/* Display the validation error if it exists */}
           {infoError && (
             <p className="text-xs text-red-500 mt-3 font-medium">{infoError}</p>
           )}
@@ -460,9 +480,10 @@ export default function UserInfo({ token, user, stats }: UserInfoProps) {
             </button>
             <button
               onClick={handleInfoSaveClick}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 transition-colors"
+              disabled={isLoading}
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-50 transition-colors"
             >
-              Save Changes
+              {isLoading ? "Checking..." : "Save Changes"}
             </button>
           </div>
         </ModalShell>

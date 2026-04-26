@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AdminApiClient } from "@/src/lib/admin/adminApiClient";
 import requireAdminAuth from "@/src/lib/admin/requireAdminAuth";
 import CreateShopForm from "@/src/components/features/shops/createShopForm";
+import { uploadMassageImage } from "@/src/lib/upload/uploadClient";
 
 type CreateShopActionState = {
   success: boolean;
@@ -10,7 +11,8 @@ type CreateShopActionState = {
 };
 
 export default async function CreateShopPage() {
-  await requireAdminAuth();
+  const { session } = await requireAdminAuth();
+  const token = session?.user?.token as string;
 
   async function createShopAction(
     _prevState: CreateShopActionState,
@@ -29,7 +31,11 @@ export default async function CreateShopPage() {
         .map((value) => String(value).trim())
         .filter(Boolean);
 
-      await actionApi.createShop({
+      const queuedFiles = formData
+        .getAll("imageFiles")
+        .filter((value): value is File => value instanceof File && value.size > 0);
+
+      const createResponse = await actionApi.createShop({
         name: String(formData.get("name") ?? "").trim(),
         address: String(formData.get("address") ?? "").trim(),
         district: String(formData.get("district") ?? "").trim(),
@@ -39,6 +45,18 @@ export default async function CreateShopPage() {
         price: Number(formData.get("price") ?? 0),
         pictures,
       });
+
+      const createdShopId = createResponse.data?._id;
+
+      if (createdShopId && queuedFiles.length > 0) {
+        for (const file of queuedFiles) {
+          await uploadMassageImage({
+            token: actionToken,
+            massageId: createdShopId,
+            file,
+          });
+        }
+      }
     } catch (error) {
       const message =
         error instanceof Error && error.message
@@ -55,5 +73,5 @@ export default async function CreateShopPage() {
     redirect("/admin/shops");
   }
 
-  return <CreateShopForm action={createShopAction} />;
+  return <CreateShopForm action={createShopAction} uploadToken={token} />;
 }

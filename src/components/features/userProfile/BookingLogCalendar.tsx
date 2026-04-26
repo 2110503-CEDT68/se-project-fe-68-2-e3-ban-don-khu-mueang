@@ -2,30 +2,45 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Clock, Eye, Pencil, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Clock, Eye, Pencil, X, Loader2 } from "lucide-react";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
+import { uploadAvatarImage } from "@/src/lib/upload/uploadClient";
 
 interface CalendarProps {
+  token: string; // 👈 Added token for API calls
   bookingLogs: Record<string, any[]>;
+  avatarUrl?: string | null;
+  avatarSeed?: string;
 }
 
-export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
-  const [viewDate, setViewDate] = useState(new Date());
+export default function ProfileCalendarWidget({
+  token,
+  bookingLogs,
+  avatarUrl,
+  avatarSeed,
+}: CalendarProps) {
+  const router = useRouter();
+  const [viewDate, setViewDate] = useState(new Date()); 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [todayStr, setTodayStr] = useState("");
-  const [avatarSrc, setAvatarSrc] = useState(
-    "https://api.dicebear.com/9.x/notionists/svg?seed=pawong"
-  );
+  const [avatarSrc, setAvatarSrc] = useState("");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Initialize the avatar image URL
+    setAvatarSrc(getUserAvatarUrl(avatarUrl, avatarSeed ?? "user"));
+
+    // Set today's date string
     const today = new Date();
     setTodayStr(
       `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
         today.getDate()
       ).padStart(2, "0")}`
     );
-  }, []);
+  }, [avatarUrl, avatarSeed]);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -34,46 +49,85 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
   const offset = firstDay === 0 ? 6 : firstDay - 1;
   const monthLabel = viewDate.toLocaleString("en-US", { month: "long", year: "numeric" });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setAvatarSrc(url);
-    e.target.value = "";
+
+    // Optimistic UI update - show the image locally immediately
+    const localUrl = URL.createObjectURL(file);
+    setAvatarSrc(localUrl);
+
+    setIsUploading(true);
+    try {
+      // Actually upload to the server
+      const response = await uploadAvatarImage({ token, file });
+      setAvatarSrc(response.data.avatarUrl);
+      
+      // 👈 Tell Next.js to refresh the session data in the background
+      // This will instantly update the Navbar and other components across the site
+      router.refresh(); 
+    } catch (error) {
+      console.error("Failed to upload image", error);
+      alert("Failed to upload image. Please try again.");
+      // Revert back if it fails
+      setAvatarSrc(getUserAvatarUrl(avatarUrl, avatarSeed ?? "user"));
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (
     <div className="flex flex-col items-center gap-6">
       {/* ── Avatar ── */}
-      {/* outer wrapper is a bit larger than the circle to give room for the pencil badge */}
       <div className="relative group" style={{ width: 104, height: 104 }}>
+        
+        {/* Loading Overlay */}
+        {isUploading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-full bg-white/70 backdrop-blur-[2px]">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-800" />
+          </div>
+        )}
+
         {/* circle photo */}
         <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-slate-200">
-          <Image src={avatarSrc} alt="Avatar" fill unoptimized className="object-cover" />
+          {avatarSrc && (
+            <Image 
+              src={avatarSrc} 
+              alt="Avatar" 
+              fill 
+              unoptimized 
+              className="object-cover" 
+            />
+          )}
         </div>
 
-        {/* Hover overlay — Eye only */}
-        <button
-          onClick={() => setLightboxOpen(true)}
-          title="View photo"
-          className="absolute inset-0 w-24 h-24 rounded-full bg-black/50 opacity-0 group-hover:opacity-100
-                     transition-opacity duration-200 flex items-center justify-center text-white
-                     hover:text-sky-300 cursor-pointer"
-        >
-          <Eye size={20} />
-        </button>
+        {/* Hover overlay — Eye only (Hidden while uploading) */}
+        {!isUploading && (
+          <button
+            onClick={() => setLightboxOpen(true)}
+            title="View photo"
+            className="absolute inset-0 w-24 h-24 rounded-full bg-black/50 opacity-0 group-hover:opacity-100
+                       transition-opacity duration-200 flex items-center justify-center text-white
+                       hover:text-sky-300 cursor-pointer"
+          >
+            <Eye size={20} />
+          </button>
+        )}
 
-        {/* Pencil badge — top-right, just outside the circle edge */}
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          title="Edit photo"
-          className="absolute top-0 right-0 flex h-7 w-7 items-center justify-center
-                     rounded-full bg-white border border-slate-200 shadow-md
-                     text-slate-500 hover:text-amber-500 hover:border-amber-300
-                     transition-colors z-10"
-        >
-          <Pencil size={13} />
-        </button>
+        {/* Pencil badge — top-right (Hidden while uploading) */}
+        {!isUploading && (
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Edit photo"
+            className="absolute top-0 right-0 flex h-7 w-7 items-center justify-center
+                       rounded-full bg-white border border-slate-200 shadow-md
+                       text-slate-500 hover:text-amber-500 hover:border-amber-300
+                       transition-colors z-10"
+          >
+            <Pencil size={13} />
+          </button>
+        )}
 
         {/* Hidden file input */}
         <input
@@ -82,6 +136,7 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
           accept="image/*"
           className="hidden"
           onChange={handleFileChange}
+          disabled={isUploading}
         />
       </div>
 
@@ -191,7 +246,7 @@ export default function ProfileCalendarWidget({ bookingLogs }: CalendarProps) {
           })}
         </div>
 
-        {/* Booking log panel */}
+        {/* Booking log panel: HEIGHT-LOCKED CONTAINER */}
         <div className="mt-6 h-[220px] w-full">
           {selectedDate && bookingLogs[selectedDate] ? (
             <div className="relative h-full overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3 animate-in fade-in zoom-in-95 duration-200">
