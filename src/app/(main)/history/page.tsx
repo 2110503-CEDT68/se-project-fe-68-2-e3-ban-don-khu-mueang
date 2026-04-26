@@ -8,6 +8,23 @@ import { MassageShop } from "@/src/types/interface";
 import getReviews from "@/src/lib/review/getReviews";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+type HistoryReservationItem = {
+    id: string;
+    reviewId?: string;
+    massageName: string;
+    imageSrc: string;
+    reserveDate?: string;
+    completedOn: string;
+    price?: number;
+    netPrice?: number;
+    discount?: { name: string; amount: number; percentage?: number }[];
+    province?: string;
+    tel?: string;
+    createdAt?: string;
+    rating?: number;
+    comment?: string;
+};
 export default async function HistoryPage() {
     const session = await getServerSession(authOptions);
     const token = session?.user?.token;
@@ -78,7 +95,7 @@ export default async function HistoryPage() {
         }
     }
 
-    const pastReservations = await Promise.all(
+    const pastReservations: HistoryReservationItem[] = await Promise.all(
         reservations.data
             .filter((appointment) => {
                 const reserveDate = new Date(appointment.reserveDate);
@@ -119,6 +136,13 @@ export default async function HistoryPage() {
                             reviewId: matchedReview?.reviewId, // <-- Include the Review ID
                             massageName: shopResponse.data.name,
                             imageSrc,
+                            reserveDate: appointment.reserveDate,
+                            price: appointment.price,
+                            netPrice: appointment.netPrice,
+                            discount: appointment.discount,
+                            province: shopResponse.data.province,
+                            tel: shopResponse.data.tel,
+                            createdAt: appointment.createdAt,
                             completedOn: new Date(appointment.reserveDate).toLocaleDateString("en-US", {
                                 month: "short",
                                 day: "numeric",
@@ -135,6 +159,13 @@ export default async function HistoryPage() {
                     reviewId: matchedReview?.reviewId, // <-- Include the Review ID
                     massageName,
                     imageSrc,
+                    reserveDate: appointment.reserveDate,
+                    price: appointment.price,
+                    netPrice: appointment.netPrice,
+                    discount: appointment.discount,
+                    province: typeof appointment.massage === "object" ? appointment.massage.province : undefined,
+                    tel: typeof appointment.massage === "object" ? appointment.massage.tel : undefined,
+                    createdAt: appointment.createdAt,
                     completedOn: new Date(appointment.reserveDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -168,7 +199,14 @@ export default async function HistoryPage() {
                             reviewId={reservation.reviewId} // UPDATE 2: Pass Review ID
                             massageName={reservation.massageName}
                             imageSrc={reservation.imageSrc}
+                            reserveDate={reservation.reserveDate}
                             completedOn={reservation.completedOn}
+                            price={reservation.price}
+                            netPrice={reservation.netPrice}
+                            discount={reservation.discount}
+                            province={reservation.province}
+                            tel={reservation.tel}
+                            createdAt={reservation.createdAt}
                             token={token}
                             initialRating={reservation.rating}
                             initialComment={reservation.comment || ""}
