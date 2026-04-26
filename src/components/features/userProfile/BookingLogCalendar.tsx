@@ -39,7 +39,7 @@ export default function ProfileCalendarWidget({
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-slate-200">
-        <Image src={avatarSrc} alt="Avatar" className="rounded-full" fill />
+        <Image src={avatarSrc} alt="Avatar" className="rounded-full object-cover" fill />
       </div>
 
       <div className="w-75 shrink-0">

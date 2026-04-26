@@ -45,10 +45,9 @@ export default function UserAuthNav({ profile, isAdmin }) {
             <Image
               src={avatarSrc}
               alt="User avatar"
-              width={36}
-              height={36}
-              className="rounded-full w-full h-full object-cover"
-              // unoptimized
+              width={256}
+              height={256}
+              className="rounded-full w-12 h-12 object-cover"
             />
           </button>
           
