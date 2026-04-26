@@ -26,6 +26,12 @@ export interface ReservationItem {
     reserveDate: string;
     user: ReservationUser | string;
     massage: ReservationMassage | string;
+    price?: number;
+    netPrice?: number;
+    discount?: {
+        name: string;
+        amount: number;
+    }[];
     rating?: number;
     isRated?: boolean;
     createdAt: string;

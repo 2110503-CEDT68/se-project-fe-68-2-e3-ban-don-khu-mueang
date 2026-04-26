@@ -91,6 +91,12 @@ export default async function UpcomeAppoint() {
                             imageSrc={imageSrc}
                             date={formattedDate}
                             time={time}
+                            province={typeof appointment.massage === 'object' ? appointment.massage.province : undefined}
+                            tel={typeof appointment.massage === 'object' ? appointment.massage.tel : undefined}
+                            price={appointment.price}
+                            netPrice={appointment.netPrice}
+                            discount={appointment.discount}
+                            createdAt={appointment.createdAt}
                         />
                     );
                 })}
