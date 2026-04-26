@@ -3,20 +3,34 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import NotificationBell from "./NotificationBell";
 
 const dropdownMenuLinks = [
   { href: "/admin", label: "Admin Dashboard", authRequired: true, adminOnly: true },
   { href: "/profile", label: "My Profile", authRequired: true },
 ];
 
+interface UserAuthNavProps {
+  profile: {
+    data: {
+      name: string;
+      picture?: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  } | null;
+  isAdmin: boolean;
+  token: string | null;
+}
+
 // Add isAdmin to the destructured props
-export default function UserAuthNav({ profile, isAdmin }) {
+export default function UserAuthNav({ profile, isAdmin, token }: UserAuthNavProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -30,6 +44,8 @@ export default function UserAuthNav({ profile, isAdmin }) {
         <span className="hidden text-sm font-medium text-on-surface sm:inline">
           Welcome, {profile.data.name.split(" ")[0]}
         </span>
+
+        {token && <NotificationBell token={token} />}
         
         <div className="relative" ref={dropdownRef}>
           <button

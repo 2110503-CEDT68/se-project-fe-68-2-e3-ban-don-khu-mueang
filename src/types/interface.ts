@@ -56,3 +56,21 @@ export interface Promotion {
         minReservations: number;
     };
 }
+
+export interface Notification {
+    _id: string;
+    user: string;
+    type: 'shop_closed' | 'promotion_new' | 'promotion_expiring';
+    title: string;
+    message: string;
+    isRead: boolean;
+    metadata: {
+        shopId?: string;
+        shopName?: string;
+        promotionId?: string;
+        promotionName?: string;
+        reservationId?: string;
+        expiryDate?: string;
+    };
+    createdAt: string;
+}
