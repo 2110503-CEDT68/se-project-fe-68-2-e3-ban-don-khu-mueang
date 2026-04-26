@@ -163,8 +163,8 @@ export default function HistoryReviewCard({
     return (
         <>
             <article className="mx-auto w-full max-w-5xl overflow-hidden rounded-3xl border border-[rgba(195,200,194,0.28)] bg-surface-container shadow-[0_8px_24px_rgb(26_28_24/0.04)]">
-                <div className="grid gap-0 lg:grid-cols-[1fr_2fr]">
-                    <div className="relative min-h-[320px] bg-surface-container-lowest lg:min-h-full">
+                <div className="grid gap-0 lg:grid-cols-[1fr_2fr] lg:h-130">
+                    <div className="relative h-80 bg-surface-container-lowest lg:h-full">
                         <Image
                             src={imageSrc}
                             alt={massageName}
@@ -174,7 +174,7 @@ export default function HistoryReviewCard({
                         />
                     </div>
 
-                    <div className="flex flex-col gap-4 p-6 lg:p-8">
+                    <div className="flex flex-col gap-4 p-6 lg:p-8 lg:overflow-y-auto">
                         <div className="flex flex-col gap-1">
                             <h3 className="font-headline text-2xl leading-tight text-foreground">{massageName}</h3>
                             <p className="text-sm text-on-surface-variant">Completed on {completedOn}</p>
@@ -203,12 +203,12 @@ export default function HistoryReviewCard({
                             </button>
                         </div>
 
-                        <div className="flex min-h-[360px] flex-col rounded-2xl border border-[rgba(195,200,194,0.35)] bg-white p-4 lg:p-5">
+                        <div className="flex h-90 flex-col rounded-2xl border border-[rgba(195,200,194,0.35)] bg-white p-4 lg:p-5 overflow-hidden">
                             {activeView === "detail" ? (
-                                <>
-                                    <h4 className="text-sm font-bold uppercase tracking-[0.12em] text-secondary">Promotion Details</h4>
+                                <div className="flex flex-col overflow-y-auto h-full">
+                                    <h4 className="text-sm font-bold uppercase tracking-[0.12em] text-secondary shrink-0">Promotion Details</h4>
 
-                                    <div className="mt-3 grid grid-cols-2 gap-2">
+                                    <div className="mt-3 grid grid-cols-2 gap-2 overflow-y-auto flex-1">
                                         <div className="rounded-xl bg-surface-container-lowest px-3 py-2.5">
                                             <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Date</p>
                                             <p className="mt-1 text-sm font-semibold text-foreground">{formattedReserveDate}</p>
@@ -262,7 +262,7 @@ export default function HistoryReviewCard({
                                     )}
 
                                     {createdAt && (
-                                        <p className="mt-auto pt-3 text-xs text-on-surface-variant">
+                                        <p className="mt-auto pt-3 text-xs text-on-surface-variant shrink-0">
                                             Booking Date: {new Date(createdAt).toLocaleString("en-US", {
                                                 month: "short",
                                                 day: "numeric",
@@ -272,47 +272,46 @@ export default function HistoryReviewCard({
                                             })}
                                         </p>
                                     )}
-
-                                </>
+                                </div>
                             ) : (
-                                <>
-                                    <div className="flex h-full flex-col gap-3">
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <div className="rounded-xl bg-surface-container-lowest px-3 py-2.5">
-                                                <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Rating</p>
-                                                <div className="mt-1 flex min-h-8 items-center">
-                                                    <Rating
-                                                        name={`history-rating-${id}`}
-                                                        value={rating}
-                                                        onChange={(_, newValue) => setRating(newValue)}
-                                                        className="text-secondary"
-                                                        disabled={isSubmitting || isSaved}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="rounded-xl bg-surface-container-lowest px-3 py-2.5 text-right">
-                                                <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Status</p>
-                                                <p className="mt-1 text-sm font-semibold text-foreground">
-                                                    {isSaved ? "Review Submitted" : "Ready to submit"}
-                                                </p>
+                                <div className="flex flex-col h-full gap-3">
+                                    <div className="grid grid-cols-2 gap-2 shrink-0">
+                                        <div className="rounded-xl bg-surface-container-lowest px-3 py-2.5">
+                                            <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Rating</p>
+                                            <div className="mt-1 flex h-8 items-center">
+                                                <Rating
+                                                    name={`history-rating-${id}`}
+                                                    value={rating}
+                                                    onChange={(_, newValue) => setRating(newValue)}
+                                                    className="text-secondary"
+                                                    disabled={isSubmitting || isSaved}
+                                                />
                                             </div>
                                         </div>
+                                        <div className="rounded-xl bg-surface-container-lowest px-3 py-2.5 text-right">
+                                            <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Status</p>
+                                            <p className="mt-1 text-sm font-semibold text-foreground">
+                                                {isSaved ? "Review Submitted" : "Ready to submit"}
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                        <label className="flex flex-col gap-2">
-                                            <span className="text-xs font-bold uppercase tracking-[0.12em] text-secondary">Review note</span>
+                                    <div className="flex-1 overflow-hidden flex flex-col gap-2 min-h-0">
+                                        <label className="flex flex-col gap-2 flex-1 min-h-0">
+                                            <span className="text-xs font-bold uppercase tracking-[0.12em] text-secondary shrink-0">Review note</span>
                                             <textarea
                                                 value={comment || ""}
                                                 onChange={(event) => setComment(event.target.value)}
-                                                rows={5}
                                                 placeholder="Write a short note about your experience..."
-                                                className="min-h-[170px] rounded-xl border border-[rgba(195,200,194,0.45)] bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-on-surface-variant focus:border-primary disabled:opacity-60"
+                                                className="flex-1 rounded-xl border border-[rgba(195,200,194,0.45)] bg-white px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-on-surface-variant focus:border-primary disabled:opacity-60 resize-none"
                                                 disabled={isSubmitting || isSaved}
                                             />
                                         </label>
 
-                                        {submitError && <p className="text-xs font-medium text-red-700">{submitError}</p>}
+                                        {submitError && <p className="text-xs font-medium text-red-700 shrink-0">{submitError}</p>}
+                                    </div>
 
-                                        <div className="mt-auto flex items-end justify-end gap-2">
+                                        <div className="flex items-end justify-end gap-2 shrink-0">
                                             {!isSaved ? (
                                                 <>
                                                     <button
@@ -355,8 +354,7 @@ export default function HistoryReviewCard({
                                                 </>
                                             )}
                                         </div>
-                                    </div>
-                                </>
+                                </div>
                             )}
                         </div>
                     </div>
