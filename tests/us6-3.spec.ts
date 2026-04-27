@@ -193,7 +193,7 @@ test.describe.serial('US 6-3: Delete comment and rating', () => {
         }
     });
 
-    test('TC6-5: Customer deletes their own review after confirming the modal', async ({ page }) => {
+    test('TC6-5: Customer deletes their own review after confirming the modal', async ({ page }, testInfo) => {
         const comment = `US6-3 delete ${Date.now()}`;
         const fixture = await createFixtureWithReview(records, adminToken, userToken, 'delete', 4, comment);
         if (!fixture) {
@@ -209,15 +209,23 @@ test.describe.serial('US 6-3: Delete comment and rating', () => {
 
         await card.getByRole('button', { name: /delete/i }).click();
         await expect(page.getByText('Are you sure?')).toBeVisible();
+        await page.locator('[role="dialog"], .fixed.inset-0').first().screenshot({
+            path: testInfo.outputPath('tc6-5-confirm-modal.png'),
+        });
         await page.getByRole('button', { name: /confirm/i }).click();
 
-        await expect(card.getByRole('button', { name: /^submit$/i })).toBeVisible({ timeout: 10_000 });
+        const submitButton = card.getByRole('button', { name: /^submit$/i });
+        await submitButton.scrollIntoViewIfNeeded();
+        await expect(submitButton).toBeVisible({ timeout: 10_000 });
         await expect(card.getByRole('button', { name: /edit/i })).not.toBeVisible();
         await expect(card.getByRole('button', { name: /delete/i })).not.toBeVisible();
+        await card.screenshot({
+            path: testInfo.outputPath('tc6-5-post-delete-card.png'),
+        });
         await expectShopReviewDeleted(fixture.shopId, comment);
     });
 
-    test('TC6-6: Review management buttons are not visible on shop detail for guests', async ({ page }) => {
+    test('TC6-6: Review management buttons are not visible on shop detail for guests', async ({ page }, testInfo) => {
         const comment = `US6-3 guest permission ${Date.now()}`;
         const fixture = await createFixtureWithReview(records, adminToken, userToken, 'guest-permission', 5, comment);
         if (!fixture) {
@@ -231,6 +239,12 @@ test.describe.serial('US 6-3: Delete comment and rating', () => {
         await expect(page.getByText(comment)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByRole('button', { name: /^edit$/i })).not.toBeVisible();
         await expect(page.getByRole('button', { name: /^delete$/i })).not.toBeVisible();
+
+        const reviewCard = page.locator('div.group').filter({ hasText: comment }).first();
+        await reviewCard.scrollIntoViewIfNeeded();
+        await reviewCard.screenshot({
+            path: testInfo.outputPath('tc6-6-guest-review-card.png'),
+        });
     });
 
     test('TC6-7: Customer can cancel delete confirmation and keep the review', async ({ page }) => {

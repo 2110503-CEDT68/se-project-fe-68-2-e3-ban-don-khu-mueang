@@ -250,7 +250,7 @@ test.describe.serial('US 6-1: Post comment and rating', () => {
         if (review._id) records.reviewIds.push(review._id);
     });
 
-    test('TC6-2: Customer cannot submit a comment without selecting a rating', async ({ page }) => {
+    test('TC6-2: Customer cannot submit a comment without selecting a rating', async ({ page }, testInfo) => {
         const fixture = await createPastReservationFixture(records, adminToken, userToken, 'missing-rating');
         if (!fixture) {
             test.skip(true, 'Review test data could not be created');
@@ -262,8 +262,13 @@ test.describe.serial('US 6-1: Post comment and rating', () => {
 
         const card = await openHistoryReviewCard(page, fixture.shopName);
         await card.getByPlaceholder('Write a short note about your experience...').fill(`No rating ${Date.now()}`);
+        const submitButton = card.getByRole('button', { name: /^submit$/i });
+        await submitButton.scrollIntoViewIfNeeded();
+        await expect(submitButton).toBeDisabled();
 
-        await expect(card.getByRole('button', { name: /^submit$/i })).toBeDisabled();
+        await card.screenshot({
+            path: testInfo.outputPath('tc6-2-review-card.png'),
+        });
     });
 });
 
