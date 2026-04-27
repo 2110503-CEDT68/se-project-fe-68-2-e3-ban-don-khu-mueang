@@ -169,7 +169,7 @@ test.describe.serial('US 6-4: Guest views rating and comments', () => {
         }
     });
 
-    test('TC6-8: Guest sees average rating and review comment on shop detail', async ({ page }) => {
+    test('TC6-8: Guest sees average rating and review comment on shop detail', async ({ page }, testInfo) => {
         const comment = `US6-4 guest visible ${Date.now()}`;
         const fixture = await createReviewFixture(records, adminToken, userToken, 'guest-review', 4, comment);
         if (!fixture) {
@@ -184,9 +184,23 @@ test.describe.serial('US 6-4: Guest views rating and comments', () => {
         await expect(page.getByRole('heading', { name: fixture.shopName })).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText(/Rating\s+4(\.0)?\s+\(1 reviews?\)/i)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText(comment)).toBeVisible({ timeout: 15_000 });
+
+        const ratingText = page.getByText(/Rating\s+4(\.0)?\s+\(1 reviews?\)/i);
+        await ratingText.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        await page.screenshot({
+            path: testInfo.outputPath('tc6-8-rating-page.png'),
+        });
+
+        const reviewComment = page.getByText(comment);
+        await reviewComment.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        await page.screenshot({
+            path: testInfo.outputPath('tc6-8-review-section.png'),
+        });
     });
 
-    test('TC6-9: Guest sees empty review state when a shop has no reviews', async ({ page }) => {
+    test('TC6-9: Guest sees empty review state when a shop has no reviews', async ({ page }, testInfo) => {
         const fixture = await createShopFixture(records, adminToken, 'no-reviews');
         if (!fixture) {
             test.skip(true, 'Shop test data could not be created');
@@ -199,5 +213,19 @@ test.describe.serial('US 6-4: Guest views rating and comments', () => {
         await expect(page.getByRole('heading', { name: fixture.shopName })).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText(/Rating\s+0\s+\(0 reviews?\)/i)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText('No Review')).toBeVisible();
+
+        const ratingText = page.getByText(/Rating\s+0\s+\(0 reviews?\)/i);
+        await ratingText.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        await page.screenshot({
+            path: testInfo.outputPath('tc6-9-rating-page.png'),
+        });
+
+        const noReviewText = page.getByText('No Review');
+        await noReviewText.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        await page.screenshot({
+            path: testInfo.outputPath('tc6-9-review-section.png'),
+        });
     });
 });
