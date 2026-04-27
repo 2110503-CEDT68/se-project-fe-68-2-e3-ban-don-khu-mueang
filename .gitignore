@@ -50,6 +50,9 @@ lint-result.txt
 pnpm-lock.yaml
 pnpm-workspace.yaml
 
+# swagger api
+public/swagger.json
+
 # Playwright
 node_modules/
 /test-results/

@@ -3,20 +3,43 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { getUserAvatarUrl } from "@/src/lib/avatar";
+import NotificationBell from "./NotificationBell";
 
 const dropdownMenuLinks = [
   { href: "/admin", label: "Admin Dashboard", authRequired: true, adminOnly: true },
   { href: "/profile", label: "My Profile", authRequired: true },
 ];
 
-// Add isAdmin to the destructured props
-export default function UserAuthNav({ profile, isAdmin }) {
+interface UserAuthNavProps {
+  profile: {
+    data: {
+      name: string;
+      picture?: string;
+      avatarUrl?: string | null; // Added to match your usage below
+      _id?: string;
+      email?: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  } | null;
+  isAdmin: boolean;
+  token: string | null;
+}
+
+export default function UserAuthNav({ profile, isAdmin, token }: UserAuthNavProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  // Kept the properly typed ref, removed the duplicate
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const avatarSrc = getUserAvatarUrl(
+    profile?.data?.avatarUrl,
+    profile?.data?._id ?? profile?.data?.email ?? profile?.data?.name ?? "user"
+  );
 
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -30,6 +53,8 @@ export default function UserAuthNav({ profile, isAdmin }) {
         <span className="hidden text-sm font-medium text-on-surface sm:inline">
           Welcome, {profile.data.name.split(" ")[0]}
         </span>
+
+        {token && <NotificationBell token={token} />}
         
         <div className="relative" ref={dropdownRef}>
           <button
@@ -38,11 +63,11 @@ export default function UserAuthNav({ profile, isAdmin }) {
             aria-expanded={isOpen}
           >
             <Image
-              src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${profile.data._id}`}
+              src={avatarSrc}
               alt="User avatar"
-              width={40}
-              height={40}
-              // unoptimized
+              width={256}
+              height={256}
+              className="rounded-full w-12 h-12 object-cover"
             />
           </button>
           

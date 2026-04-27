@@ -2,28 +2,13 @@ const API_BASE = 'https://e3-be.vercel.app';
 
 //api for authen
 export async function getAuthToken(email: string, password: string): Promise<string> {
-    for (let i = 0; i < 3; i++) {
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-            const text = await res.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                console.error("Non-JSON auth resp:", text);
-                throw new Error("Invalid JSON: " + text.substring(0, 50));
-            }
-            if (data.token) return data.token;
-        } catch (e) {
-            if (i === 2) throw e;
-            await new Promise(r => setTimeout(r, 1000)); // sleep and retry
-        }
-    }
-    throw new Error("Failed to get auth token");
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    return data.token;
 }
 
 //api for manage shop
@@ -48,14 +33,39 @@ export async function deleteShopViaApi(token: string, shopId: string) {
 }
 
 //api for manage reservation
-export async function createReservationViaApi(token: string, shopId: string, date: string) {
+export async function createReservationViaApi(
+    token: string,
+    shopId: string,
+    date: string,
+    price: number = 500,
+    netPrice?: number
+) {
     const res = await fetch(`${API_BASE}/api/massages/${shopId}/reservations`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ reserveDate: date }),
+        body: JSON.stringify({
+            reserveDate: date,
+            price,
+            netPrice: netPrice ?? price,
+        }),
+    });
+    return res.json();
+}
+
+export async function getReservationsViaApi(token: string) {
+    const res = await fetch(`${API_BASE}/api/reservations`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
+    return res.json();
+}
+
+export async function deleteReservationViaApi(token: string, reservationId: string) {
+    const res = await fetch(`${API_BASE}/api/reservations/${reservationId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
     });
     return res.json();
 }

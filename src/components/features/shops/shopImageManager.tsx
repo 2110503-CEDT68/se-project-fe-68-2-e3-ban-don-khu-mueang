@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import ShopImageUrlDialog from "./shopImageUrlDialog";
+import { uploadMassageImage } from "@/src/lib/upload/uploadClient";
 
 const EMPTY_IMAGES: string[] = [];
 
@@ -16,6 +17,8 @@ type ShopImageManagerProps = {
   addLabel?: string;
   emptyStateLabel?: string;
   maxImages?: number;
+  uploadToken?: string;
+  massageId?: string;
 };
 
 const fallbackPreview = "https://placehold.co/600x400?text=Preview+Unavailable";
@@ -66,6 +69,8 @@ export default function ShopImageManager({
   addLabel = "Add Image",
   emptyStateLabel = "No images added yet.",
   maxImages,
+  uploadToken,
+  massageId,
 }: ShopImageManagerProps) {
   const [imageUrls, setImageUrls] = useState<string[]>(initialImages);
   const [failedImages, setFailedImages] = useState<Record<number, boolean>>({});
@@ -73,12 +78,17 @@ export default function ShopImageManager({
   const [dialogError, setDialogError] = useState<string | null>(null);
   const [draftUrl, setDraftUrl] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingCreateFileCount, setPendingCreateFileCount] = useState(0);
 
   useEffect(() => {
     onImagesChange?.(imageUrls);
   }, [imageUrls, onImagesChange]);
 
   const imageLimitReached = typeof maxImages === "number" && imageUrls.length >= maxImages;
+  const canUploadToStorage = Boolean(uploadToken && massageId);
+  const canQueueFilesForCreate = Boolean(uploadToken && !massageId);
 
   const openAddDialog = () => {
     if (imageLimitReached) {
@@ -165,6 +175,76 @@ export default function ShopImageManager({
     });
   };
 
+  const handleFileSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!uploadToken || !massageId) {
+      setUploadError("Save the shop first before uploading files.");
+      return;
+    }
+
+    if (imageLimitReached) {
+      setUploadError("Image limit reached.");
+      return;
+    }
+
+    setUploadError(null);
+    setIsUploading(true);
+
+    try {
+      const response = await uploadMassageImage({
+        token: uploadToken,
+        massageId,
+        file,
+      });
+
+      const latestPicture = response.data.pictures[response.data.pictures.length - 1];
+
+      if (!latestPicture) {
+        throw new Error("Upload completed, but no image URL was returned.");
+      }
+
+      setImageUrls((currentImages) => {
+        if (currentImages.includes(latestPicture)) {
+          return currentImages;
+        }
+
+        return [...currentImages, latestPicture];
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Unable to upload image.";
+      setUploadError(message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeferredFileSelection = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+
+    const invalidFile = files.find(
+      (file) => file.type !== "image/jpeg" && file.type !== "image/png",
+    );
+
+    if (invalidFile) {
+      setUploadError("Only JPEG and PNG images are supported.");
+      setPendingCreateFileCount(0);
+      event.target.value = "";
+      return;
+    }
+
+    setUploadError(null);
+    setPendingCreateFileCount(files.length);
+  };
+
   const markImageFailed = (index: number) => {
     setFailedImages((currentFailedImages) => ({
       ...currentFailedImages,
@@ -183,16 +263,69 @@ export default function ShopImageManager({
             ) : null}
           </div>
 
-          <button
-            type="button"
-            onClick={openAddDialog}
-            disabled={imageLimitReached}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:border-outline-variant disabled:text-on-surface-variant disabled:hover:bg-transparent"
-          >
-            <span className="material-symbols-outlined text-lg"><img src="/circle-plus-dark.svg" alt="" /></span>
-            {addLabel}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {canUploadToStorage ? (
+              <label
+                className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
+                  imageLimitReached
+                    ? "cursor-not-allowed border-outline-variant text-on-surface-variant"
+                    : "border-primary text-primary hover:bg-primary hover:text-on-primary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-lg"><img src="/circle-plus-dark.svg" alt="" /></span>
+                {isUploading ? "Uploading..." : "Upload File"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  disabled={imageLimitReached || isUploading}
+                  onChange={handleFileSelected}
+                  className="hidden"
+                />
+              </label>
+            ) : canQueueFilesForCreate ? (
+              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary">
+                <span className="material-symbols-outlined text-lg"><img src="/circle-plus-dark.svg" alt="" /></span>
+                Select Files
+                <input
+                  type="file"
+                  name="imageFiles"
+                  accept="image/jpeg,image/png"
+                  multiple
+                  onChange={handleDeferredFileSelection}
+                  className="hidden"
+                />
+              </label>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={openAddDialog}
+              disabled={imageLimitReached}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-on-primary disabled:cursor-not-allowed disabled:border-outline-variant disabled:text-on-surface-variant disabled:hover:bg-transparent"
+            >
+              <span className="material-symbols-outlined text-lg"><img src="/circle-plus-dark.svg" alt="" /></span>
+              {addLabel}
+            </button>
+          </div>
         </div>
+
+        {uploadError ? (
+          <p className="mb-4 text-sm text-error">{uploadError}</p>
+        ) : null}
+
+        {canQueueFilesForCreate ? (
+          <p className="mb-4 text-xs text-on-surface-variant">
+            {pendingCreateFileCount > 0
+              ? `${pendingCreateFileCount} file(s) selected. They will be uploaded automatically after shop creation.`
+              : "Select files now. They will upload automatically right after you create the shop."}
+          </p>
+        ) : null}
+
+        {!canUploadToStorage && !canQueueFilesForCreate ? (
+          <p className="mb-4 text-xs text-on-surface-variant">
+            File upload is available after the shop has been created. You can still paste image URLs now.
+          </p>
+        ) : null}
 
         {variant === "gallery" ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">

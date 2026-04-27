@@ -33,7 +33,7 @@ export default function ReviewCard({ review, onDelete }: ReviewCardProps) {
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <div style={{ width: "48px", height: "48px", borderRadius: "9999px", backgroundColor: "#D1D5DB", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Manrope, sans-serif", fontSize: "18px", fontWeight: 600, color: "#4E6053" }}>
           {review.userAvatar
-            ? <Image src={`${review.userAvatar}`} width={48} height={48} alt={review.userName}/>
+            ? <Image src={`${review.userAvatar}`} width={50} height={50} alt={review.userName}/>
             : review.userName.charAt(0).toUpperCase()
           }
         </div>

@@ -1,6 +1,5 @@
 import BookCard from "./BookCard";
 import { getServerSession } from "next-auth";
-import Image from "next/image";
 import { authOptions } from "@/src/app/api/auth/[...nextauth]/authOptions";
 import getReservation, { ReservationMassage } from "@/src/lib/reservation/getReservation";
 import getShopById from "@/src/lib/shop/getShopById";
@@ -61,7 +60,7 @@ export default async function UpcomeAppoint() {
     return (
         <div className="flex flex-col gap-12 w-full">
             <div className="flex items-center gap-6">
-                <h2 className="font-headline text-[30px] leading-[36px] text-foreground">
+                <h2 className="font-headline text-[30px] leading-9 text-foreground">
                     Upcoming Appointments
                 </h2>
                 <div className="flex px-4 py-1 bg-secondary-container rounded-full items-center justify-center">
@@ -91,6 +90,12 @@ export default async function UpcomeAppoint() {
                             imageSrc={imageSrc}
                             date={formattedDate}
                             time={time}
+                            province={typeof appointment.massage === 'object' ? appointment.massage.province : undefined}
+                            tel={typeof appointment.massage === 'object' ? appointment.massage.tel : undefined}
+                            price={appointment.price}
+                            netPrice={appointment.netPrice}
+                            discount={appointment.discount}
+                            createdAt={appointment.createdAt}
                         />
                     );
                 })}

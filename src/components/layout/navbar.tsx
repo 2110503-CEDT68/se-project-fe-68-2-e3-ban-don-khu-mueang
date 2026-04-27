@@ -82,7 +82,7 @@ export async function Navbar() {
           </div>
         </div>
 
-        <UserNavigation profile={profile} isAdmin={isAdmin}/>
+        <UserNavigation profile={profile} isAdmin={isAdmin} token={session?.user?.token ?? null}/>
         
       </div>
     </nav>

@@ -85,7 +85,7 @@ export class AdminApiClient {
 
   // --- Reservations ---
 
-  async getReservations(limit = 100) {
+  async getReservations(limit = 1000) {
     return this.fetch<ApiListResponse<AdminReservation>>(`/api/reservations?limit=${limit}`);
   }
 
