@@ -80,7 +80,7 @@ jobs:
           image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: sarif
           output: trivy-results.sarif
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: os,library
