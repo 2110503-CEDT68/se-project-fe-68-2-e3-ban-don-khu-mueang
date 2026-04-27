@@ -33,14 +33,39 @@ export async function deleteShopViaApi(token: string, shopId: string) {
 }
 
 //api for manage reservation
-export async function createReservationViaApi(token: string, shopId: string, date: string) {
+export async function createReservationViaApi(
+    token: string,
+    shopId: string,
+    date: string,
+    price: number = 500,
+    netPrice?: number
+) {
     const res = await fetch(`${API_BASE}/api/massages/${shopId}/reservations`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ reserveDate: date }),
+        body: JSON.stringify({
+            reserveDate: date,
+            price,
+            netPrice: netPrice ?? price,
+        }),
+    });
+    return res.json();
+}
+
+export async function getReservationsViaApi(token: string) {
+    const res = await fetch(`${API_BASE}/api/reservations`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+    });
+    return res.json();
+}
+
+export async function deleteReservationViaApi(token: string, reservationId: string) {
+    const res = await fetch(`${API_BASE}/api/reservations/${reservationId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
     });
     return res.json();
 }
