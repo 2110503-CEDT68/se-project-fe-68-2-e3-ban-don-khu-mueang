@@ -2,13 +2,28 @@ const API_BASE = 'https://e3-be.vercel.app';
 
 //api for authen
 export async function getAuthToken(email: string, password: string): Promise<string> {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    return data.token;
+    for (let i = 0; i < 3; i++) {
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error("Non-JSON auth resp:", text);
+                throw new Error("Invalid JSON: " + text.substring(0, 50));
+            }
+            if (data.token) return data.token;
+        } catch (e) {
+            if (i === 2) throw e;
+            await new Promise(r => setTimeout(r, 1000)); // sleep and retry
+        }
+    }
+    throw new Error("Failed to get auth token");
 }
 
 //api for manage shop

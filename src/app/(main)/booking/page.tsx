@@ -105,6 +105,20 @@ function BookingForm() {
 
     return (
         <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
+            {/* Promotion Banner */}
+            {activePromotion && (
+                <div className="w-full flex items-center justify-between rounded-xl bg-[#ecf0ec] px-5 py-4 border border-[#C3C8C2]/30 shadow-sm animate-in fade-in zoom-in-95 duration-300">
+                    <div className="flex flex-col">
+                        <span className="font-['Manrope'] text-sm font-bold text-[#4E6053]">🎉 Active Promotion Applied!</span>
+                        <span className="font-['Noto_Serif'] text-xl font-medium text-[#1A1C18]">{activePromotion.name}</span>
+                    </div>
+                    <div className="flex h-12 w-20 flex-col items-center justify-center rounded-lg bg-[#4E6053] text-white">
+                        <span className="font-['Roboto'] font-bold leading-none">{activePromotion.percentage}%</span>
+                        <span className="text-[10px] font-semibold tracking-wider text-white/80">OFF</span>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col gap-3">
                 <label className="text-xs font-bold uppercase tracking-[0.6px] text-[#737873]">
                     current Shop name
