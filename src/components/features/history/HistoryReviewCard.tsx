@@ -242,10 +242,10 @@ export default function HistoryReviewCard({
                                     {hasPromos && (
                                         <div className="mt-3 rounded-xl bg-primary-container/30 px-3 py-2.5">
                                             <div className="flex items-center justify-between gap-2">
-                                                <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Promos</p>
-                                                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-secondary">
+                                                <p className="text-xs uppercase tracking-[0.12em] text-on-surface-variant">Promotions</p>
+                                                {/* <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-secondary">
                                                     {discount.length}
-                                                </span>
+                                                </span> */}
                                             </div>
                                             <ul className="mt-2 max-h-14 space-y-1 overflow-hidden">
                                                 {discount.map((item, index) => (

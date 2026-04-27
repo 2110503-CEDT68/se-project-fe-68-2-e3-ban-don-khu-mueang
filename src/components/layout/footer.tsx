@@ -42,7 +42,7 @@ export async function Footer() {
                 <li>
                   <Link
                     className="transition-colors hover:text-primary"
-                    href="/my-bookings"
+                    href="/mybooking"
                   >
                     My Bookings
                   </Link>
@@ -59,6 +59,14 @@ export async function Footer() {
                 )}
               </>
             )}
+            <li>
+              <Link
+                className="transition-colors hover:text-primary"
+                href="/privacy-policy"
+              >
+                Privacy Policy
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

@@ -54,13 +54,13 @@ export default function ReservationCard({
 						Guest
 					</p>
 					<div className="flex items-center gap-3">
-						<div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary-container text-xs font-bold text-on-secondary-container">
+						<div className="flex w-12 h-12 aspect-square items-center justify-center rounded-full bg-secondary-container text-xs font-bold text-on-secondary-container">
 							<Image
 								src={userAvatar}
 								alt="User avatar"
-								width={40}
-								height={40}
-								className="h-10 w-10 rounded-full object-cover"
+								width={48}
+								height={48}
+								className="w-12 h-12 rounded-full aspect-square"
 							/>
 						</div>
 						<div>
