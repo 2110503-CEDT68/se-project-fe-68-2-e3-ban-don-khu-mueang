@@ -149,6 +149,7 @@ export default function PromotionsClient({ initialPromotions, token }: Promotion
         {promotions.map((promo) => (
           <div
             key={promo._id}
+            data-testid="promo-card"
             className="flex flex-col justify-between overflow-hidden rounded-3xl bg-surface-container-lowest p-6 shadow-sm ring-1 ring-black/5 transition-all hover:shadow-md"
           >
             <div className="flex-1">
@@ -209,7 +210,7 @@ export default function PromotionsClient({ initialPromotions, token }: Promotion
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <form 
             onSubmit={handleSave}
-            className="w-full max-w-[800px] overflow-hidden rounded-[32px] bg-surface-container-lowest shadow-2xl flex flex-col max-h-[90vh]"
+            className="w-full max-w-200 overflow-hidden rounded-4xl bg-surface-container-lowest shadow-2xl flex flex-col max-h-[90vh]"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between px-10 py-8 border-b border-outline-variant/10 bg-white">
@@ -243,7 +244,7 @@ export default function PromotionsClient({ initialPromotions, token }: Promotion
               {/* MODERN ERROR BANNER */}
               {formError && (
                 <div className="mb-6 flex items-start gap-3 rounded-2xl bg-error-container/20 p-5 text-sm font-medium text-error border border-error/20 animate-in fade-in slide-in-from-top-2">
-                   <img src="/badge-info.svg" className="w-5 mt-0.5 opacity-80 filter brightness-0 saturate-100 hue-rotate-[340deg]" alt="Error" />
+                   <img src="/badge-info.svg" className="w-5 mt-0.5 opacity-80 filter brightness-0 saturate-100 hue-rotate-340" alt="Error" />
                    <div className="flex-1">
                      <p className="font-bold mb-1">Could not save promotion</p>
                      <p className="font-light opacity-90">{formError}</p>
@@ -259,8 +260,9 @@ export default function PromotionsClient({ initialPromotions, token }: Promotion
 
                 <div className="space-y-6">
                   <div>
-                    <label className="mb-2 block text-[13px] font-semibold text-on-surface-variant">Promotion Name</label>
+                    <label htmlFor="promo-name" className="mb-2 block text-[13px] font-semibold text-on-surface-variant">Promotion Name</label>
                     <input
+                      id="promo-name"
                       type="text"
                       required
                       value={formData.name}
@@ -272,8 +274,9 @@ export default function PromotionsClient({ initialPromotions, token }: Promotion
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="mb-2 block text-[13px] font-semibold text-on-surface-variant">Discount Amount (%)</label>
+                      <label htmlFor="promo-amount" className="mb-2 block text-[13px] font-semibold text-on-surface-variant">Discount Amount (%)</label>
                       <input
+                        id="promo-amount"
                         type="number"
                         required
                         min={1}
