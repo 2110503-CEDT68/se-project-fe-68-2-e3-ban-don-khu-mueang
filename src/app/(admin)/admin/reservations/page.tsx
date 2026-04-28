@@ -42,6 +42,7 @@ export default async function ManageReservationsPage() {
 			toBangkokOffsetDateTime(reserveDate)
 		);
 
+
 		revalidatePath("/admin/reservations");
 	}
 

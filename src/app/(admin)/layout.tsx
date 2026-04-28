@@ -5,6 +5,7 @@ import { redirect, notFound, unauthorized, forbidden } from "next/navigation";
 import getSessionAuthContext from "@/src/lib/auth/getSessionAuthContext";
 import AdminNav from "../../components/features/admin/adminNav";
 import { getUserAvatarUrl } from "@/src/lib/avatar";
+import { Toaster } from "react-hot-toast";
 
 export default async function AdminLayout({
 	children,
@@ -27,6 +28,8 @@ export default async function AdminLayout({
 
         return (
 		<div className="bg-background text-on-surface flex min-h-screen flex-col lg:flex-row">
+			<Toaster />
+
 			<aside className="bg-surface-container hidden w-72 shrink-0 flex-col border-r border-outline-variant/10 lg:sticky lg:top-0 lg:flex lg:h-screen lg:overflow-y-auto">
 				<div className="p-8">
 					<h1 className="font-headline text-primary text-2xl font-bold">

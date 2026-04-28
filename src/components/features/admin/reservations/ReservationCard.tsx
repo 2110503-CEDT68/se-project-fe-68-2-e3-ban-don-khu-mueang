@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useState, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import type { AdminReservation } from "@/src/types/api";
 import {
 	getUserMeta,
@@ -21,13 +23,58 @@ export default function ReservationCard({
 	updateReservationAction,
 	deleteReservationAction,
 }: ReservationCardProps) {
+	const [isEditOpen, setIsEditOpen] = useState(false);
+	const [isSavingUpdate, setIsSavingUpdate] = useState(false);
+	const [isSavingDelete, setIsSavingDelete] = useState(false);
 	const editId = `edit-reservation-${reservation._id}`;
 	const userMeta = getUserMeta(reservation.user);
-	console.log("User meta:", userMeta);
 	const userAvatar = getUserAvatarUrl(userMeta.avatarUrl, userMeta.avatarSeed);
 	const massageMeta = getMassageMeta(reservation.massage);
 	const reserveDate = new Date(reservation.reserveDate);
 	const status = getStatus(reservation.reserveDate, reservation.isRated);
+
+	const handleUpdateSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		if (isSavingUpdate) {
+			return;
+		}
+
+		setIsSavingUpdate(true);
+
+		try {
+			const formData = new FormData(event.currentTarget);
+			await toast.promise(Promise.resolve(updateReservationAction(formData)), {
+				loading: "Updating reservation...",
+				success: "Reservation updated successfully.",
+				error: "Failed to update reservation.",
+			});
+			setIsEditOpen(false);
+		} finally {
+			setIsSavingUpdate(false);
+		}
+	};
+
+	const handleDeleteSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		if (isSavingDelete) {
+			return;
+		}
+
+		setIsSavingDelete(true);
+
+		try {
+			const formData = new FormData(event.currentTarget);
+			await toast.promise(Promise.resolve(deleteReservationAction(formData)), {
+				loading: "Deleting reservation...",
+				success: "Reservation deleted successfully.",
+				error: "Failed to delete reservation.",
+			});
+		} finally {
+			setIsSavingDelete(false);
+		}
+	};
 
 	return (
 		<div
@@ -109,13 +156,13 @@ export default function ReservationCard({
 
 				<div className="lg:col-span-2 lg:flex lg:justify-end">
 					<div className="flex items-center gap-2">
-						<input id={editId} type="checkbox" className="peer hidden" />
-						<label
-							htmlFor={editId}
+						<button
+							type="button"
+							onClick={() => setIsEditOpen(true)}
 							className="cursor-pointer rounded-full bg-primary px-5 py-2 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container"
 						>
 							Update
-						</label>
+						</button>
 
 						<details className="relative">
 							<summary className="cursor-pointer list-none rounded-full border border-error px-4 py-2 text-sm font-semibold text-error hover:bg-error hover:text-on-error">
@@ -126,7 +173,7 @@ export default function ReservationCard({
 									Delete this reservation permanently?
 								</p>
 								<div className="mt-3 flex justify-end">
-									<form action={deleteReservationAction}>
+									<form onSubmit={handleDeleteSubmit}>
 										<input
 											type="hidden"
 											name="reservationId"
@@ -134,64 +181,70 @@ export default function ReservationCard({
 										/>
 										<button
 											type="submit"
-											className="rounded-full bg-error px-3 py-1.5 text-xs font-semibold text-on-error"
+											disabled={isSavingDelete}
+											className="rounded-full bg-error px-3 py-1.5 text-xs font-semibold text-on-error disabled:cursor-not-allowed disabled:opacity-70"
 										>
-											Confirm
+											{isSavingDelete ? "Deleting..." : "Confirm"}
 										</button>
 									</form>
 								</div>
 							</div>
 						</details>
 
-						<div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4 opacity-0 transition-opacity peer-checked:pointer-events-auto peer-checked:opacity-100">
-							<div className="w-full max-w-xl rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-6">
-								<div className="mb-4 flex items-center justify-between">
-									<h5 className="font-headline text-xl text-on-surface">
-										Edit Reservation
-									</h5>
-									<label
-										htmlFor={editId}
-										className="cursor-pointer rounded-full border border-outline-variant/30 px-3 py-1 text-xs text-on-surface-variant"
-									>
-										Close
-									</label>
-								</div>
-
-								<div className="mb-4 rounded-xl bg-surface p-3 text-sm text-on-surface-variant">
-									<p className="font-medium text-on-surface">{massageMeta.name}</p>
-									<p>User: {userMeta.name}</p>
-								</div>
-
-								<form action={updateReservationAction} className="space-y-4">
-									<input
-										type="hidden"
-										name="reservationId"
-										value={reservation._id}
-									/>
-									<input
-										type="datetime-local"
-										name="reserveDate"
-										defaultValue={toDatetimeLocal(reservation.reserveDate)}
-										className="w-full rounded-xl border border-outline-variant/30 bg-surface px-3 py-2 text-sm"
-										required
-									/>
-									<div className="flex justify-end gap-2">
-										<label
-											htmlFor={editId}
-											className="cursor-pointer rounded-full border border-outline-variant/30 px-5 py-2 text-sm text-on-surface-variant"
-										>
-											Cancel
-										</label>
+						{isEditOpen && (
+							<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+								<div className="w-full max-w-xl rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-6">
+									<div className="mb-4 flex items-center justify-between">
+										<h5 className="font-headline text-xl text-on-surface">
+											Edit Reservation
+										</h5>
 										<button
-											type="submit"
-											className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-on-primary hover:opacity-90"
+											type="button"
+											onClick={() => setIsEditOpen(false)}
+											className="cursor-pointer rounded-full border border-outline-variant/30 px-3 py-1 text-xs text-on-surface-variant"
 										>
-											Save
+											Close
 										</button>
 									</div>
-								</form>
+
+									<div className="mb-4 rounded-xl bg-surface p-3 text-sm text-on-surface-variant">
+										<p className="font-medium text-on-surface">{massageMeta.name}</p>
+										<p>User: {userMeta.name}</p>
+									</div>
+
+									<form onSubmit={handleUpdateSubmit} className="space-y-4">
+										<input
+											type="hidden"
+											name="reservationId"
+											value={reservation._id}
+										/>
+										<input
+											type="datetime-local"
+											name="reserveDate"
+											defaultValue={toDatetimeLocal(reservation.reserveDate)}
+											className="w-full rounded-xl border border-outline-variant/30 bg-surface px-3 py-2 text-sm"
+											required
+										/>
+										<div className="flex justify-end gap-2">
+											<button
+												type="button"
+												onClick={() => setIsEditOpen(false)}
+												className="cursor-pointer rounded-full border border-outline-variant/30 px-5 py-2 text-sm text-on-surface-variant"
+											>
+												Cancel
+											</button>
+											<button
+												type="submit"
+												disabled={isSavingUpdate}
+												className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+											>
+												{isSavingUpdate ? "Saving..." : "Save"}
+											</button>
+										</div>
+									</form>
+								</div>
 							</div>
-						</div>
+						)}
 					</div>
 				</div>
 			</div>
