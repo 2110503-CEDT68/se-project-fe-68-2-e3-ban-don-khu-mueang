@@ -64,10 +64,10 @@ export default function HistoryReviewCard({
     const dateObj = reserveDate ? new Date(reserveDate) : null;
     const hasValidReserveDate = Boolean(dateObj && !Number.isNaN(dateObj.getTime()));
     const formattedReserveDate = hasValidReserveDate
-        ? dateObj!.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        ? dateObj!.toLocaleDateString("en-US", { timeZone: "Asia/Bangkok", month: "short", day: "numeric", year: "numeric" })
         : "-";
     const formattedReserveTime = hasValidReserveDate
-        ? dateObj!.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+        ? dateObj!.toLocaleTimeString("en-US", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" })
         : "-";
     const hasPromos = discount.length > 0;
 
@@ -269,6 +269,7 @@ export default function HistoryReviewCard({
                                                 year: "numeric",
                                                 hour: "2-digit",
                                                 minute: "2-digit",
+                                                timeZone: "Asia/Bangkok",
                                             })}
                                         </p>
                                     )}
