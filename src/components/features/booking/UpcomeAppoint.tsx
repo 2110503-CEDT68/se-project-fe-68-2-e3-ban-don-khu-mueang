@@ -15,11 +15,25 @@ export default async function UpcomeAppoint() {
     const reservations = await getReservation(token as string);
 
 
+    // const upcomingReservations = reservations.data.filter((app) => {
+    //     const reserveDate = new Date(app.reserveDate);
+    //     const now = new Date();
+    //     if (typeof app.user === 'object' && app.user._id) {
+    //         return app.user._id === userId && reserveDate >= now;
+    //     }
+    //     return null;
+    // });
+
     const upcomingReservations = reservations.data.filter((app) => {
+        // This creates a string like "4/28/2026, 9:30:00 PM" specifically for Bangkok
+        const bangkokString = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
+        
+        // We then turn that string back into a Date object we can compare
+        const nowBangkok = new Date(bangkokString);
         const reserveDate = new Date(app.reserveDate);
-        const now = new Date();
+
         if (typeof app.user === 'object' && app.user._id) {
-            return app.user._id === userId && reserveDate >= now;
+            return app.user._id === userId && reserveDate >= nowBangkok;
         }
         return null;
     });
