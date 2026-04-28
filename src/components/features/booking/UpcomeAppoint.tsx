@@ -15,25 +15,11 @@ export default async function UpcomeAppoint() {
     const reservations = await getReservation(token as string);
 
 
-    // const upcomingReservations = reservations.data.filter((app) => {
-    //     const reserveDate = new Date(app.reserveDate);
-    //     const now = new Date();
-    //     if (typeof app.user === 'object' && app.user._id) {
-    //         return app.user._id === userId && reserveDate >= now;
-    //     }
-    //     return null;
-    // });
-
     const upcomingReservations = reservations.data.filter((app) => {
-        // This creates a string like "4/28/2026, 9:30:00 PM" specifically for Bangkok
-        const bangkokString = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
-        
-        // We then turn that string back into a Date object we can compare
-        const nowBangkok = new Date(bangkokString);
         const reserveDate = new Date(app.reserveDate);
-
+        const now = new Date();
         if (typeof app.user === 'object' && app.user._id) {
-            return app.user._id === userId && reserveDate >= nowBangkok;
+            return app.user._id === userId && reserveDate >= now;
         }
         return null;
     });
@@ -91,8 +77,8 @@ export default async function UpcomeAppoint() {
                         : "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=400&fit=crop";
 
                     const d = new Date(appointment.reserveDate);
-                    const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const formattedDate = d.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', month: 'short', day: 'numeric', year: 'numeric' });
+                    const time = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
 
                     return (
                         <BookCard
