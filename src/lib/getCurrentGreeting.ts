@@ -1,20 +1,18 @@
 function getCurrentGreeting() {
-    const currentHour = new Date().getHours();
-    console.log(currentHour);
-    //convert to utc+7
-    const utc7Hour = (currentHour + 7) % 24;
-    
-    let greetingMessage;
+    // Use Intl API to get the hour in Asia/Bangkok (UTC+7) reliably
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Bangkok",
+        hour: "numeric",
+        hour12: false,
+    }).formatToParts(now);
 
-    if (utc7Hour < 12) {
-        greetingMessage = "Good Morning";
-    } else if (utc7Hour < 18) {
-        greetingMessage = "Good Afternoon";
-    } else {
-        greetingMessage = "Good Evening";
-    }
+    const hourPart = parts.find((p) => p.type === "hour");
+    const bangkokHour = hourPart ? Number(hourPart.value) : (now.getUTCHours() + 7) % 24;
 
-    return greetingMessage;
+    if (bangkokHour < 12) return "Good Morning";
+    if (bangkokHour < 18) return "Good Afternoon";
+    return "Good Evening";
 }
 
 export default getCurrentGreeting;
