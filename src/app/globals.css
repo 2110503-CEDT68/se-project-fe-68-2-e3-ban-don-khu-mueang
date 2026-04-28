@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -160,6 +161,10 @@ a {
   -webkit-font-smoothing: antialiased;
 }
 
+.thai-font {
+  font-family: 'IBM Plex Sans Thai', sans-serif;
+}
+
 .custom-underline {
   position: relative;
 }
@@ -174,4 +179,16 @@ a {
   border-radius: 9999px;
   background-color: var(--secondary-fixed-dim);
   z-index: -1;
+}
+
+/* Notification animations */
+@keyframes badge-pop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes panel-slide-in {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
 }

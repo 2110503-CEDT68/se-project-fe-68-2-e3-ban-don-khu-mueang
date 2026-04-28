@@ -77,8 +77,8 @@ export default async function UpcomeAppoint() {
                         : "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&h=400&fit=crop";
 
                     const d = new Date(appointment.reserveDate);
-                    const formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const time = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const formattedDate = d.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok', month: 'short', day: 'numeric', year: 'numeric' });
+                    const time = d.toLocaleTimeString('en-US', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
 
                     return (
                         <BookCard
