@@ -57,6 +57,7 @@ export default function BookCard({
     const [editTime, setEditTime] = useState(initTime);
     const formattedCreatedAt = createdAt
         ? new Date(createdAt).toLocaleString('en-US', {
+            timeZone: 'Asia/Bangkok',
             month: 'short',
             day: 'numeric',
             year: 'numeric',
