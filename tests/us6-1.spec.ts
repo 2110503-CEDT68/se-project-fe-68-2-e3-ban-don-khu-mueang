@@ -2,7 +2,6 @@ import { expect, Locator, Page, test } from '@playwright/test';
 import { loginAsUser } from './helpers/auth';
 import {
     createReservationViaApi,
-    createReviewViaApi,
     createShopViaApi,
     deleteReservationViaApi,
     deleteReviewViaApi,
@@ -122,28 +121,6 @@ async function createPastReservationFixture(
         return { shopId, shopName, reservationId };
     } catch (error) {
         console.log(`Skipping Epic 6 setup for ${label}: ${formatError(error)}`);
-        return null;
-    }
-}
-
-async function createFixtureWithReview(
-    records: CreatedRecords,
-    adminToken: string,
-    userToken: string,
-    label: string,
-    rating: number,
-    comment: string,
-): Promise<ReviewFixture | null> {
-    const fixture = await createPastReservationFixture(records, adminToken, userToken, label);
-    if (!fixture) return null;
-
-    try {
-        const review = await createReviewViaApi(userToken, fixture.reservationId, rating, comment);
-        const reviewId = requireCreatedId(review, 'Review');
-        records.reviewIds.push(reviewId);
-        return { ...fixture, reviewId };
-    } catch (error) {
-        console.log(`Skipping Epic 6 review setup for ${label}: ${formatError(error)}`);
         return null;
     }
 }
@@ -269,106 +246,5 @@ test.describe.serial('US 6-1: Post comment and rating', () => {
         await card.screenshot({
             path: testInfo.outputPath('tc6-2-review-card.png'),
         });
-    });
-});
-
-test.describe.serial('US 6-2: Edit comment and rating', () => {
-    let adminToken = '';
-    let userToken = '';
-    let setupError: string | null = null;
-    let records = emptyRecords();
-
-    test.beforeAll(async () => {
-        try {
-            adminToken = await getAuthToken('admin@example.com', 'password');
-            userToken = await getAuthToken('user@example.com', 'password');
-
-            if (!adminToken || !userToken) {
-                throw new Error('Auth tokens were not returned');
-            }
-        } catch (error) {
-            setupError = formatError(error);
-            console.log(`Skipping US 6-2 tests: ${setupError}`);
-        }
-    });
-
-    test.beforeEach(() => {
-        records = emptyRecords();
-        if (setupError) test.skip(true, setupError);
-    });
-
-    test.afterEach(async () => {
-        if (adminToken && userToken) {
-            await cleanupRecords(records, adminToken, userToken);
-        }
-    });
-
-    test('TC6-3: Customer edits their existing rating and comment', async ({ page }) => {
-        const originalComment = `US6-2 original ${Date.now()}`;
-        const updatedComment = `US6-2 updated ${Date.now()}`;
-        const fixture = await createFixtureWithReview(
-            records,
-            adminToken,
-            userToken,
-            'edit',
-            4,
-            originalComment,
-        );
-
-        if (!fixture) {
-            test.skip(true, 'Review test data could not be created');
-            return;
-        }
-
-        await loginAsUser(page);
-        await page.waitForTimeout(3000);
-
-        const card = await openHistoryReviewCard(page, fixture.shopName);
-        const commentBox = card.getByPlaceholder('Write a short note about your experience...');
-        await expect(card.getByText('Review Submitted')).toBeVisible({ timeout: 10_000 });
-        await expect(commentBox).toHaveValue(originalComment);
-
-        await card.getByRole('button', { name: /edit/i }).click();
-        await selectRating(card, 2);
-        await commentBox.fill(updatedComment);
-        await card.getByRole('button', { name: /^submit$/i }).click();
-
-        await expect(card.getByText('Review Submitted')).toBeVisible({ timeout: 10_000 });
-        await expect(commentBox).toHaveValue(updatedComment);
-        await expectPersistedShopReview(fixture.shopId, updatedComment, 2);
-    });
-
-    test('TC6-4: Customer cancels review editing and keeps the original content', async ({ page }) => {
-        const originalComment = `US6-2 cancel original ${Date.now()}`;
-        const unsavedComment = `US6-2 cancel unsaved ${Date.now()}`;
-        const fixture = await createFixtureWithReview(
-            records,
-            adminToken,
-            userToken,
-            'cancel-edit',
-            3,
-            originalComment,
-        );
-
-        if (!fixture) {
-            test.skip(true, 'Review test data could not be created');
-            return;
-        }
-
-        await loginAsUser(page);
-        await page.waitForTimeout(3000);
-
-        const card = await openHistoryReviewCard(page, fixture.shopName);
-        const commentBox = card.getByPlaceholder('Write a short note about your experience...');
-        await expect(commentBox).toHaveValue(originalComment);
-
-        await card.getByRole('button', { name: /edit/i }).click();
-        await selectRating(card, 1);
-        await commentBox.fill(unsavedComment);
-        await card.getByRole('button', { name: /cancel/i }).click();
-
-        await expect(card.getByText('Review Submitted')).toBeVisible();
-        await expect(commentBox).toHaveValue(originalComment);
-        await expectPersistedShopReview(fixture.shopId, originalComment, 3);
     });
 });

@@ -43,7 +43,7 @@ test.describe('US 7-1: Admin creates promotion', () => {
         
         // Save ID for cleanup
         const promoRes = await getPromotionsViaApi(adminToken);
-        const createdPromo = promoRes.data?.find((p: any) => p.name === testPromoName);
+        const createdPromo = promoRes.data?.find((p: { name: string; _id: string }) => p.name === testPromoName);
         if (createdPromo) {
             createdPromoId = createdPromo._id;
         }

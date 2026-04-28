@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { loginAsAdmin } from './helpers/auth';
 import { getAuthToken, createPromotionViaApi, deletePromotionViaApi } from './helpers/api';
 
-const getPromoCard = (page: any, name: string) =>
+const getPromoCard = (page: Page, name: string) =>
     page.locator('div.rounded-3xl').filter({ hasText: name }).first();
 
-const seedThenGoto = async (page: any, name: string, adminToken: string) => {
+const seedThenGoto = async (page: Page, name: string, adminToken: string) => {
     // Seed first so DB has time to propagate while we login
     await createPromotionViaApi(adminToken, {
         name, amount: 10,

@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { loginAsAdmin } from './helpers/auth';
 import { getAuthToken, createPromotionViaApi, deletePromotionViaApi } from './helpers/api';
 
-const getPromoCard = (page: any, name: string) =>
+const getPromoCard = (page: Page, name: string) =>
     page.locator('div.rounded-3xl').filter({ hasText: name }).first();
 
-const waitAndGoto = async (page: any, name: string) => {
+const waitAndGoto = async (page: Page, name: string) => {
     await loginAsAdmin(page);
     await page.waitForTimeout(3000);
     await page.goto('/admin/promotions').catch(() => page.goto('/admin/promotions'));
