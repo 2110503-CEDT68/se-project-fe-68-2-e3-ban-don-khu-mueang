@@ -69,7 +69,7 @@ test.describe('US 8-10: Promotion Notifications', () => {
         await page.waitForTimeout(2000);
 
         // Step 5: Verify promotion notification content
-        await expect(page.getByText(new RegExp(promoName))).toBeVisible({ timeout: 10_000 });
+        await expect(page.getByText(new RegExp(promoName)).first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('TC8-5: Promotion notification shows name, discount, and expiry date', async ({ page }) => {
